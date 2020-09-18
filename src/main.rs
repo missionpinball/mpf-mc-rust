@@ -1,135 +1,55 @@
-extern crate glutin_window;
 extern crate graphics;
-extern crate opengl_graphics;
-extern crate piston;
+extern crate piston_window;
+extern crate find_folder;
+
+use piston_window::*;
+mod scene;
+mod server;
+
 use std::thread;
-use std::sync::mpsc;
-use std::time::Duration;
 use std::sync::Arc;
 
-use glutin_window::GlutinWindow as Window;
-use opengl_graphics::{GlGraphics, OpenGL};
-use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
+use piston::input::RenderEvent;
 use piston::window::WindowSettings;
 
-use tokio::prelude::*;
-use tokio::time::delay_for;
-use tokio::sync::{watch, Mutex};
-
-use tonic::{transport::Server, Request, Response, Status};
-
-use mpf::media_controller_server::{MediaController, MediaControllerServer};
-use mpf::{SlideAddRequest, SlideAddResponse};
-
-pub mod mpf {
-    tonic::include_proto!("mpf"); // The string specified here must match the proto package name
-}
-
-pub struct App {
-    gl: GlGraphics, // OpenGL drawing backend.
-    rotation: f64,  // Rotation for the square.
-    channel: std::sync::mpsc::Receiver<f64>,
-}
-
-impl App {
-    fn render(&mut self, args: &RenderArgs) {
-        use graphics::*;
-
-        const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-        const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
-
-        let square = rectangle::square(0.0, 0.0, args.window_size[0] / 4.0);
-        let rotation = self.rotation;
-        let (x, y) = (args.window_size[0] / 2.0, args.window_size[1] / 2.0);
-
-        self.gl.draw(args.viewport(), |c, gl| {
-            // Clear the screen.
-            clear(GREEN, gl);
-
-            let transform = c
-                .transform
-                .trans(x, y)
-                .rot_rad(rotation)
-                .trans(-25.0, -25.0);
-
-            // Draw a box rotating around the middle of the screen.
-            rectangle(RED, square, transform, gl);
-        });
-    }
-
-    fn update(&mut self, args: &UpdateArgs) {
-        // Rotate 2 radians per second.
-        self.rotation += 2.0 * args.dt;
-        while let Ok(data) = self.channel.try_recv() {
-            self.rotation += data;
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct MyMediaController {
-    channel: Arc<Mutex<std::sync::mpsc::Sender<f64>>>
-}
-
-#[tonic::async_trait]
-impl MediaController for MyMediaController {
-
-    async fn add_slide(&self, request: Request<SlideAddRequest>) ->
-    Result<Response<SlideAddResponse>, Status> {
-        let req = request.into_inner();
-        println!("Slide {} Text: {}", req.slide_name, req.text);
-       
-        let channel = self.channel.lock().await;
-        channel.send(10.0).unwrap();
-        Ok(Response::new(SlideAddResponse{}))
-    }
-}
-
-async fn serve(channel: std::sync::mpsc::Sender<f64>) {
-    let addr = "[::1]:50051".parse().unwrap();
-    let mc = MyMediaController{
-        channel: Arc::new(Mutex::new(channel))
-    };
-
-    Server::builder()
-        .add_service(MediaControllerServer::new(mc))
-        .serve(addr)
-        .await.unwrap();
-}
-
 fn main() {
-    let (tx, rx) = mpsc::channel();
+    let scene = Arc::new(scene::Scene::new());
+
+    let scene_server = scene.clone();
     thread::spawn(move || {
         let mut rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(serve(tx));
+        rt.block_on(server::serve(scene_server));
     });
 
-    // Change this to OpenGL::V2_1 if not working.
-    let opengl = OpenGL::V3_2;
+    let render_size = [400.0, 200.0];
+    let mut window: PistonWindow = WindowSettings::new(
+        "piston: hello_world",
+        render_size
+    )
+    .exit_on_esc(true)
+    //.opengl(OpenGL::V2_1) // Set a different OpenGl version
+    .build()
+    .unwrap();
 
-    // Create an Glutin window.
-    let mut window: Window = WindowSettings::new("spinning-square", [200, 200])
-        .graphics_api(opengl)
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
+    let assets = find_folder::Search::ParentsThenKids(3, 3)
+        .for_folder("assets").unwrap();
+    println!("{:?}", assets);
+    let mut glyphs = window.load_font(assets.join("FiraSans-Regular.ttf")).unwrap();
 
-    // Create a new game and run it.
-    let mut app = App {
-        gl: GlGraphics::new(opengl),
-        rotation: 0.0,
-        channel: rx
-    };
-
-    let mut events = Events::new(EventSettings::new());
-    while let Some(e) = events.next(&mut window) {
+    //window.set_lazy(true);
+    while let Some(e) = window.next() {
         if let Some(args) = e.render_args() {
-            app.render(&args);
-        }
+            window.draw_2d(&e, |c, g, device| {
+                //let transform = c.transform.trans(10.0, 100.0);
 
-        if let Some(args) = e.update_args() {
-            app.update(&args);
+                clear([0.0, 0.0, 0.0, 1.0], g);
+                let c = c.scale(args.window_size[0] / render_size[0], args.window_size[1] / render_size[1]);
+                let current_scene = scene.current_slide.lock().unwrap();
+                current_scene.lock().unwrap().render(&c, g, &mut glyphs);
+
+                // Update glyphs before rendering.
+                glyphs.factory.encoder.flush(device);
+            });
         }
     }
 }

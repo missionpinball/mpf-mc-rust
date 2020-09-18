@@ -19,6 +19,16 @@ class MediaControllerStub(object):
                 request_serializer=server__pb2.SlideAddRequest.SerializeToString,
                 response_deserializer=server__pb2.SlideAddResponse.FromString,
                 )
+        self.AddWidgetsToSlide = channel.unary_unary(
+                '/mpf.MediaController/AddWidgetsToSlide',
+                request_serializer=server__pb2.WidgetAddRequest.SerializeToString,
+                response_deserializer=server__pb2.WidgetAddResponse.FromString,
+                )
+        self.ShowSlide = channel.unary_unary(
+                '/mpf.MediaController/ShowSlide',
+                request_serializer=server__pb2.ShowSlideRequest.SerializeToString,
+                response_deserializer=server__pb2.ShowSlideResponse.FromString,
+                )
 
 
 class MediaControllerServicer(object):
@@ -26,10 +36,20 @@ class MediaControllerServicer(object):
 
     def AddSlide(self, request, context):
         """rpc ConfigureDisplays() returns ();
-        rpc RemoveSlide() returns ();
-        rpc AddWidgetsToSlide() returns ();
-        rpc RemoveWidgetFromSlide() returns ();
-        rpc ShowSlide() returns ();
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AddWidgetsToSlide(self, request, context):
+        """rpc RemoveSlide() returns ();
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ShowSlide(self, request, context):
+        """rpc RemoveWidgetFromSlide() returns ();
         rpc PreloadAsset() returns ();
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -43,6 +63,16 @@ def add_MediaControllerServicer_to_server(servicer, server):
                     servicer.AddSlide,
                     request_deserializer=server__pb2.SlideAddRequest.FromString,
                     response_serializer=server__pb2.SlideAddResponse.SerializeToString,
+            ),
+            'AddWidgetsToSlide': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddWidgetsToSlide,
+                    request_deserializer=server__pb2.WidgetAddRequest.FromString,
+                    response_serializer=server__pb2.WidgetAddResponse.SerializeToString,
+            ),
+            'ShowSlide': grpc.unary_unary_rpc_method_handler(
+                    servicer.ShowSlide,
+                    request_deserializer=server__pb2.ShowSlideRequest.FromString,
+                    response_serializer=server__pb2.ShowSlideResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -68,5 +98,39 @@ class MediaController(object):
         return grpc.experimental.unary_unary(request, target, '/mpf.MediaController/AddSlide',
             server__pb2.SlideAddRequest.SerializeToString,
             server__pb2.SlideAddResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AddWidgetsToSlide(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/mpf.MediaController/AddWidgetsToSlide',
+            server__pb2.WidgetAddRequest.SerializeToString,
+            server__pb2.WidgetAddResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ShowSlide(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/mpf.MediaController/ShowSlide',
+            server__pb2.ShowSlideRequest.SerializeToString,
+            server__pb2.ShowSlideResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
