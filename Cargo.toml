@@ -9,6 +9,8 @@ piston = "0.52.0"
 piston2d-graphics = "0.37.0"
 piston_window = "0.112.0"
 find_folder = "0.3.0"
+image = "0.23.9"
+#gstreamer-video = "0.16.3"
 
 tonic = "0.3"
 prost = "0.6"

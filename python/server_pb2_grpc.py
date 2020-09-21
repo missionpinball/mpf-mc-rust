@@ -50,6 +50,7 @@ class MediaControllerServicer(object):
 
     def ShowSlide(self, request, context):
         """rpc RemoveWidgetFromSlide() returns ();
+        rpc ListAssets() returns ();
         rpc PreloadAsset() returns ();
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)

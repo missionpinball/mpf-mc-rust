@@ -12,18 +12,17 @@ use std::sync::Arc;
 use piston::input::RenderEvent;
 use piston::window::WindowSettings;
 
+struct MediaControllerContext {
+    glyphs: Glyphs,
+    texture_context: G2dTextureContext
+}
+
 fn main() {
     let scene = Arc::new(scene::Scene::new());
 
-    let scene_server = scene.clone();
-    thread::spawn(move || {
-        let mut rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(server::serve(scene_server));
-    });
-
     let render_size = [400.0, 200.0];
     let mut window: PistonWindow = WindowSettings::new(
-        "piston: hello_world",
+        "MPF Media Controller",
         render_size
     )
     .exit_on_esc(true)
@@ -34,7 +33,20 @@ fn main() {
     let assets = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets").unwrap();
     println!("{:?}", assets);
-    let mut glyphs = window.load_font(assets.join("FiraSans-Regular.ttf")).unwrap();
+    let glyphs = window.load_font(assets.join("FiraSans-Regular.ttf")).unwrap();
+
+    let scene_server = scene.clone();
+    let asset_path = assets.clone();    
+    thread::spawn(move || {
+        let mut rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(server::serve(scene_server, asset_path));
+    });
+
+    let texture_context = window.create_texture_context();
+    let mut mc_context = MediaControllerContext {
+        glyphs,
+        texture_context
+    };
 
     //window.set_lazy(true);
     while let Some(e) = window.next() {
@@ -45,10 +57,10 @@ fn main() {
                 clear([0.0, 0.0, 0.0, 1.0], g);
                 let c = c.scale(args.window_size[0] / render_size[0], args.window_size[1] / render_size[1]);
                 let current_scene = scene.current_slide.lock().unwrap();
-                current_scene.lock().unwrap().render(&c, g, &mut glyphs);
+                current_scene.lock().unwrap().render(&c, g, &mut mc_context);
 
                 // Update glyphs before rendering.
-                glyphs.factory.encoder.flush(device);
+                mc_context.glyphs.factory.encoder.flush(device);
             });
         }
     }

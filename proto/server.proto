@@ -8,6 +8,7 @@ service MediaController {
     rpc AddWidgetsToSlide(WidgetAddRequest) returns (WidgetAddResponse);
     //rpc RemoveWidgetFromSlide() returns ();
     rpc ShowSlide(ShowSlideRequest) returns (ShowSlideResponse);
+    //rpc ListAssets() returns ();
     //rpc PreloadAsset() returns ();
 }
 
@@ -19,9 +20,34 @@ message SlideAddResponse {
     uint32 slide_id = 1;
 }
 
+message Color {
+    float red = 1;
+    float green = 2;
+    float blue = 3;
+    float alpha = 4;
+}
+
 message WidgetAddRequest {
+    message WidgetText {
+        string text = 1;
+    }
+    message WidgetRectangle {
+        double width = 1;
+        double height = 2;
+    }
+    message WidgetImage {
+        string path = 1;    // TODO: replace by asset id from ListAssets
+    }
     uint32 slide_id = 1;
-    string text = 2;
+    double x = 2;
+    double y = 3;
+    uint32 z = 4;
+    Color color = 5;
+    oneof widget {
+        WidgetText text_widget = 6;
+        WidgetRectangle rectangle_widget = 7;
+        WidgetImage image_widget = 8;
+    }
 }
 
 message WidgetAddResponse {

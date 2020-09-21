@@ -936,6 +936,7 @@ name = "mpf-mc-rust"
 version = "0.1.0"
 dependencies = [
  "find_folder",
+ "image",
  "piston",
  "piston2d-graphics",
  "piston_window",
