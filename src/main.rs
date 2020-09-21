@@ -52,8 +52,6 @@ fn main() {
     while let Some(e) = window.next() {
         if let Some(args) = e.render_args() {
             window.draw_2d(&e, |c, g, device| {
-                //let transform = c.transform.trans(10.0, 100.0);
-
                 clear([0.0, 0.0, 0.0, 1.0], g);
                 let c = c.scale(args.window_size[0] / render_size[0], args.window_size[1] / render_size[1]);
                 let current_scene = scene.current_slide.lock().unwrap();
