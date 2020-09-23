@@ -9,15 +9,19 @@ mod server;
 use std::thread;
 use std::sync::Arc;
 
+extern crate gstreamer as gst;
+
 use piston::input::RenderEvent;
 use piston::window::WindowSettings;
 
-struct MediaControllerContext {
+pub struct MediaControllerContext {
     glyphs: Glyphs,
     texture_context: G2dTextureContext
 }
 
 fn main() {
+    gst::init().unwrap();
+
     let scene = Arc::new(scene::Scene::new());
 
     let render_size = [400.0, 200.0];

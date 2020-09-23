@@ -41,9 +41,20 @@ widget_add_request.color.red = 1.0
 widget_add_request.color.blue = 0.0
 widget_add_request.color.green = 0.0
 widget_add_request.color.alpha = 1.0
-widget_add_request.image_widget.width = 100
-widget_add_request.image_widget.height = 200
 widget_add_request.image_widget.path = "/home/jan/src/missionpinball-website/images/mpf-flag-tiny.png"
+stub.AddWidgetsToSlide(widget_add_request)
+
+widget_add_request = WidgetAddRequest()
+widget_add_request.slide_id = new_slide.slide_id
+widget_add_request.x = 10
+widget_add_request.y = 10
+widget_add_request.z = 5
+widget_add_request.color.red = 1.0
+widget_add_request.color.blue = 0.0
+widget_add_request.color.green = 0.0
+widget_add_request.color.alpha = 1.0
+widget_add_request.video_widget.path = "/home/jan/Downloads/Biking_Girl_Alpha.mov"
+#widget_add_request.video_widget.path = "/home/jan/src/mpf-mc/mpfmc/tests/machine_files/video/videos/mpf_video_small_test.mp4"
 stub.AddWidgetsToSlide(widget_add_request)
 
 show_slide_request = ShowSlideRequest()

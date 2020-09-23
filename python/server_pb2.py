@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0cserver.proto\x12\x03mpf\"\x11\n\x0fSlideAddRequest\"$\n\x10SlideAddResponse\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"@\n\x05\x43olor\x12\x0b\n\x03red\x18\x01 \x01(\x02\x12\r\n\x05green\x18\x02 \x01(\x02\x12\x0c\n\x04\x62lue\x18\x03 \x01(\x02\x12\r\n\x05\x61lpha\x18\x04 \x01(\x02\"\xab\x03\n\x10WidgetAddRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\x12\t\n\x01z\x18\x04 \x01(\r\x12\x19\n\x05\x63olor\x18\x05 \x01(\x0b\x32\n.mpf.Color\x12\x37\n\x0btext_widget\x18\x06 \x01(\x0b\x32 .mpf.WidgetAddRequest.WidgetTextH\x00\x12\x41\n\x10rectangle_widget\x18\x07 \x01(\x0b\x32%.mpf.WidgetAddRequest.WidgetRectangleH\x00\x12\x39\n\x0cimage_widget\x18\x08 \x01(\x0b\x32!.mpf.WidgetAddRequest.WidgetImageH\x00\x1a\x1a\n\nWidgetText\x12\x0c\n\x04text\x18\x01 \x01(\t\x1a\x30\n\x0fWidgetRectangle\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\x1a:\n\x0bWidgetImage\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\x12\x0c\n\x04path\x18\x03 \x01(\tB\x08\n\x06widget\"\x13\n\x11WidgetAddResponse\"$\n\x10ShowSlideRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"\x13\n\x11ShowSlideResponse2\xca\x01\n\x0fMediaController\x12\x37\n\x08\x41\x64\x64Slide\x12\x14.mpf.SlideAddRequest\x1a\x15.mpf.SlideAddResponse\x12\x42\n\x11\x41\x64\x64WidgetsToSlide\x12\x15.mpf.WidgetAddRequest\x1a\x16.mpf.WidgetAddResponse\x12:\n\tShowSlide\x12\x15.mpf.ShowSlideRequest\x1a\x16.mpf.ShowSlideResponseb\x06proto3'
+  serialized_pb=b'\n\x0cserver.proto\x12\x03mpf\"\x11\n\x0fSlideAddRequest\"$\n\x10SlideAddResponse\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"@\n\x05\x43olor\x12\x0b\n\x03red\x18\x01 \x01(\x02\x12\r\n\x05green\x18\x02 \x01(\x02\x12\x0c\n\x04\x62lue\x18\x03 \x01(\x02\x12\r\n\x05\x61lpha\x18\x04 \x01(\x02\"\xe4\x03\n\x10WidgetAddRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\x12\t\n\x01z\x18\x04 \x01(\r\x12\x19\n\x05\x63olor\x18\x05 \x01(\x0b\x32\n.mpf.Color\x12\x37\n\x0btext_widget\x18\x06 \x01(\x0b\x32 .mpf.WidgetAddRequest.WidgetTextH\x00\x12\x41\n\x10rectangle_widget\x18\x07 \x01(\x0b\x32%.mpf.WidgetAddRequest.WidgetRectangleH\x00\x12\x39\n\x0cimage_widget\x18\x08 \x01(\x0b\x32!.mpf.WidgetAddRequest.WidgetImageH\x00\x12\x39\n\x0cvideo_widget\x18\t \x01(\x0b\x32!.mpf.WidgetAddRequest.WidgetVideoH\x00\x1a\x1a\n\nWidgetText\x12\x0c\n\x04text\x18\x01 \x01(\t\x1a\x30\n\x0fWidgetRectangle\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\x1a\x1b\n\x0bWidgetImage\x12\x0c\n\x04path\x18\x01 \x01(\t\x1a\x1b\n\x0bWidgetVideo\x12\x0c\n\x04path\x18\x01 \x01(\tB\x08\n\x06widget\"\x13\n\x11WidgetAddResponse\"$\n\x10ShowSlideRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"\x13\n\x11ShowSlideResponse2\xca\x01\n\x0fMediaController\x12\x37\n\x08\x41\x64\x64Slide\x12\x14.mpf.SlideAddRequest\x1a\x15.mpf.SlideAddResponse\x12\x42\n\x11\x41\x64\x64WidgetsToSlide\x12\x15.mpf.WidgetAddRequest\x1a\x16.mpf.WidgetAddResponse\x12:\n\tShowSlide\x12\x15.mpf.ShowSlideRequest\x1a\x16.mpf.ShowSlideResponseb\x06proto3'
 )
 
 
@@ -162,8 +162,8 @@ _WIDGETADDREQUEST_WIDGETTEXT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=426,
-  serialized_end=452,
+  serialized_start=485,
+  serialized_end=511,
 )
 
 _WIDGETADDREQUEST_WIDGETRECTANGLE = _descriptor.Descriptor(
@@ -200,8 +200,8 @@ _WIDGETADDREQUEST_WIDGETRECTANGLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=454,
-  serialized_end=502,
+  serialized_start=513,
+  serialized_end=561,
 )
 
 _WIDGETADDREQUEST_WIDGETIMAGE = _descriptor.Descriptor(
@@ -213,22 +213,8 @@ _WIDGETADDREQUEST_WIDGETIMAGE = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='width', full_name='mpf.WidgetAddRequest.WidgetImage.width', index=0,
-      number=1, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='height', full_name='mpf.WidgetAddRequest.WidgetImage.height', index=1,
-      number=2, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='path', full_name='mpf.WidgetAddRequest.WidgetImage.path', index=2,
-      number=3, type=9, cpp_type=9, label=1,
+      name='path', full_name='mpf.WidgetAddRequest.WidgetImage.path', index=0,
+      number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -245,8 +231,39 @@ _WIDGETADDREQUEST_WIDGETIMAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=504,
-  serialized_end=562,
+  serialized_start=563,
+  serialized_end=590,
+)
+
+_WIDGETADDREQUEST_WIDGETVIDEO = _descriptor.Descriptor(
+  name='WidgetVideo',
+  full_name='mpf.WidgetAddRequest.WidgetVideo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='path', full_name='mpf.WidgetAddRequest.WidgetVideo.path', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=592,
+  serialized_end=619,
 )
 
 _WIDGETADDREQUEST = _descriptor.Descriptor(
@@ -313,10 +330,17 @@ _WIDGETADDREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='video_widget', full_name='mpf.WidgetAddRequest.video_widget', index=8,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
-  nested_types=[_WIDGETADDREQUEST_WIDGETTEXT, _WIDGETADDREQUEST_WIDGETRECTANGLE, _WIDGETADDREQUEST_WIDGETIMAGE, ],
+  nested_types=[_WIDGETADDREQUEST_WIDGETTEXT, _WIDGETADDREQUEST_WIDGETRECTANGLE, _WIDGETADDREQUEST_WIDGETIMAGE, _WIDGETADDREQUEST_WIDGETVIDEO, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -331,7 +355,7 @@ _WIDGETADDREQUEST = _descriptor.Descriptor(
     fields=[]),
   ],
   serialized_start=145,
-  serialized_end=572,
+  serialized_end=629,
 )
 
 
@@ -355,8 +379,8 @@ _WIDGETADDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=574,
-  serialized_end=593,
+  serialized_start=631,
+  serialized_end=650,
 )
 
 
@@ -387,8 +411,8 @@ _SHOWSLIDEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=595,
-  serialized_end=631,
+  serialized_start=652,
+  serialized_end=688,
 )
 
 
@@ -412,17 +436,19 @@ _SHOWSLIDERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=633,
-  serialized_end=652,
+  serialized_start=690,
+  serialized_end=709,
 )
 
 _WIDGETADDREQUEST_WIDGETTEXT.containing_type = _WIDGETADDREQUEST
 _WIDGETADDREQUEST_WIDGETRECTANGLE.containing_type = _WIDGETADDREQUEST
 _WIDGETADDREQUEST_WIDGETIMAGE.containing_type = _WIDGETADDREQUEST
+_WIDGETADDREQUEST_WIDGETVIDEO.containing_type = _WIDGETADDREQUEST
 _WIDGETADDREQUEST.fields_by_name['color'].message_type = _COLOR
 _WIDGETADDREQUEST.fields_by_name['text_widget'].message_type = _WIDGETADDREQUEST_WIDGETTEXT
 _WIDGETADDREQUEST.fields_by_name['rectangle_widget'].message_type = _WIDGETADDREQUEST_WIDGETRECTANGLE
 _WIDGETADDREQUEST.fields_by_name['image_widget'].message_type = _WIDGETADDREQUEST_WIDGETIMAGE
+_WIDGETADDREQUEST.fields_by_name['video_widget'].message_type = _WIDGETADDREQUEST_WIDGETVIDEO
 _WIDGETADDREQUEST.oneofs_by_name['widget'].fields.append(
   _WIDGETADDREQUEST.fields_by_name['text_widget'])
 _WIDGETADDREQUEST.fields_by_name['text_widget'].containing_oneof = _WIDGETADDREQUEST.oneofs_by_name['widget']
@@ -432,6 +458,9 @@ _WIDGETADDREQUEST.fields_by_name['rectangle_widget'].containing_oneof = _WIDGETA
 _WIDGETADDREQUEST.oneofs_by_name['widget'].fields.append(
   _WIDGETADDREQUEST.fields_by_name['image_widget'])
 _WIDGETADDREQUEST.fields_by_name['image_widget'].containing_oneof = _WIDGETADDREQUEST.oneofs_by_name['widget']
+_WIDGETADDREQUEST.oneofs_by_name['widget'].fields.append(
+  _WIDGETADDREQUEST.fields_by_name['video_widget'])
+_WIDGETADDREQUEST.fields_by_name['video_widget'].containing_oneof = _WIDGETADDREQUEST.oneofs_by_name['widget']
 DESCRIPTOR.message_types_by_name['SlideAddRequest'] = _SLIDEADDREQUEST
 DESCRIPTOR.message_types_by_name['SlideAddResponse'] = _SLIDEADDRESPONSE
 DESCRIPTOR.message_types_by_name['Color'] = _COLOR
@@ -484,6 +513,13 @@ WidgetAddRequest = _reflection.GeneratedProtocolMessageType('WidgetAddRequest', 
     # @@protoc_insertion_point(class_scope:mpf.WidgetAddRequest.WidgetImage)
     })
   ,
+
+  'WidgetVideo' : _reflection.GeneratedProtocolMessageType('WidgetVideo', (_message.Message,), {
+    'DESCRIPTOR' : _WIDGETADDREQUEST_WIDGETVIDEO,
+    '__module__' : 'server_pb2'
+    # @@protoc_insertion_point(class_scope:mpf.WidgetAddRequest.WidgetVideo)
+    })
+  ,
   'DESCRIPTOR' : _WIDGETADDREQUEST,
   '__module__' : 'server_pb2'
   # @@protoc_insertion_point(class_scope:mpf.WidgetAddRequest)
@@ -492,6 +528,7 @@ _sym_db.RegisterMessage(WidgetAddRequest)
 _sym_db.RegisterMessage(WidgetAddRequest.WidgetText)
 _sym_db.RegisterMessage(WidgetAddRequest.WidgetRectangle)
 _sym_db.RegisterMessage(WidgetAddRequest.WidgetImage)
+_sym_db.RegisterMessage(WidgetAddRequest.WidgetVideo)
 
 WidgetAddResponse = _reflection.GeneratedProtocolMessageType('WidgetAddResponse', (_message.Message,), {
   'DESCRIPTOR' : _WIDGETADDRESPONSE,
@@ -523,8 +560,8 @@ _MEDIACONTROLLER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=655,
-  serialized_end=857,
+  serialized_start=712,
+  serialized_end=914,
   methods=[
   _descriptor.MethodDescriptor(
     name='AddSlide',

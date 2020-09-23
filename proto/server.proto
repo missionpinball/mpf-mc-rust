@@ -38,6 +38,9 @@ message WidgetAddRequest {
     message WidgetImage {
         string path = 1;    // TODO: replace by asset id from ListAssets
     }
+    message WidgetVideo {
+        string path = 1;    // TODO: replace by asset id from ListAssets
+    }
     uint32 slide_id = 1;
     double x = 2;
     double y = 3;
@@ -47,6 +50,7 @@ message WidgetAddRequest {
         WidgetText text_widget = 6;
         WidgetRectangle rectangle_widget = 7;
         WidgetImage image_widget = 8;
+        WidgetVideo video_widget = 9;
     }
 }
 
