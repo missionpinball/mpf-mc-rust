@@ -59,8 +59,25 @@ pub struct Widget {
     pub y: f64,
     pub z: u32,
     pub id: u32,
-    pub color: graphics::types::Color,
     pub widget: WidgetType
+}
+#[derive(Debug)]
+pub enum WidgetType {
+    Text {
+        text: String,
+        color: graphics::types::Color,
+    },
+    Rectacle {
+        width: f64,
+        height: f64,
+        color: graphics::types::Color,
+    },
+    Image {
+        image: image::RgbaImage
+    },
+    Video {
+        pipeline: gst::Pipeline
+    }
 }
 
 impl Widget {
@@ -74,16 +91,16 @@ impl Widget {
         let transform = c.transform.trans(self.x, self.y);
 
         match &self.widget {
-            WidgetType::Text { text } => {
-                Text::new_color(self.color, 32).draw(
+            WidgetType::Text { text, color} => {
+                Text::new_color(*color, 32).draw(
                                 text,
                                 &mut mc_context.glyphs,
                                 &c.draw_state,
                                 transform, gl
                             ).unwrap();
             }
-            WidgetType::Rectacle { width, height } => {
-                rectangle(self.color, [0.0, 0.0, *width, *height], transform, gl);
+            WidgetType::Rectacle { width, height, color } => {
+                rectangle(*color, [0.0, 0.0, *width, *height], transform, gl);
             },
             WidgetType::Video { pipeline } => {
 
@@ -117,7 +134,8 @@ impl Widget {
                 let texture = CreateTexture::create(&mut mc_context.texture_context, 
                     Format::Rgba8, &map, size, &TextureSettings::new()).unwrap();
 
-                /*let texture: G2dTexture = Texture::from_memory_alpha(
+                /*
+                let texture: G2dTexture = Texture::from_memory_alpha(
                     &mut mc_context.texture_context,
                     &map,
                     info.width(),
@@ -137,22 +155,5 @@ impl Widget {
                 graphics::image(&texture, transform, gl);
             }
         }
-    }
-}
-
-#[derive(Debug)]
-pub enum WidgetType {
-    Text {
-        text: String
-    },
-    Rectacle {
-        width: f64,
-        height: f64
-    },
-    Image {
-        image: image::RgbaImage
-    },
-    Video {
-        pipeline: gst::Pipeline
     }
 }

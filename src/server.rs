@@ -202,25 +202,27 @@ impl MediaController for MyMediaController {
         let req = request.into_inner();
         println!("Slide {} Widget: {:?}", req.slide_id, req.widget);
 
-        let widget = req.widget.ok_or(Status::invalid_argument("Missing Widget Type"))?;
-        let color = req.color.ok_or(Status::invalid_argument("Missing Color"))?;
+        let widget = req.widget.ok_or(Status::invalid_argument("Missing Widget Type"))?;        
        
         let new_widget = crate::scene::Widget {
             x: req.x,
             y: req.y,
             z: req.z,
-            id: req.slide_id,
-            color: mpf::convert_color(color),
+            id: req.slide_id,            
             widget: match widget {
                 mpf::widget_add_request::Widget::TextWidget(widget)  => {
+                    let color = widget.color.ok_or(Status::invalid_argument("Missing Color"))?;
                     crate::scene::WidgetType::Text {
-                        text: widget.text
+                        text: widget.text,
+                        color: mpf::convert_color(color),
                     }
                 },
                 mpf::widget_add_request::Widget::RectangleWidget(widget) => {
+                    let color = widget.color.ok_or(Status::invalid_argument("Missing Color"))?;
                     crate::scene::WidgetType::Rectacle {
                         height: widget.height,
-                        width: widget.width
+                        width: widget.width,
+                        color: mpf::convert_color(color),
                     }
                 },
                 mpf::widget_add_request::Widget::ImageWidget(widget) => {
@@ -237,11 +239,29 @@ impl MediaController for MyMediaController {
                         image: img
                     }
                 },
+                mpf::widget_add_request::Widget::ImageSpriteWidget(_widget) => {
+                    crate::scene::WidgetType::Text {
+                        text: "UNSUPPORTED".into(),
+                        color: [1.0, 1.0, 1.0, 1.0],
+                    }
+                },
+                mpf::widget_add_request::Widget::AnimatedImageWidget(_widget) => {
+                    crate::scene::WidgetType::Text {
+                        text: "UNSUPPORTED".into(),
+                        color: [1.0, 1.0, 1.0, 1.0],
+                    }
+                },
                 mpf::widget_add_request::Widget::VideoWidget(widget) => {
                     crate::scene::WidgetType::Video {
                         pipeline: create_video_pipeline(&widget.path)
                     }
-                }
+                },
+                mpf::widget_add_request::Widget::DisplayWidget(_widget) => {
+                    crate::scene::WidgetType::Text {
+                        text: "UNSUPPORTED".into(),
+                        color: [1.0, 1.0, 1.0, 1.0],
+                    }
+                },             
             }
         };
 

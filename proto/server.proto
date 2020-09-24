@@ -29,29 +29,76 @@ message Color {
 
 message WidgetAddRequest {
     message WidgetText {
-        string text = 1;
+        string text = 1;        // The text to show
+        float font_size = 2;    // Font size to use
+        string font_name = 3;   // Font to use - TODO: replace by asset id from ListAssets
+        Color color = 4;
     }
     message WidgetRectangle {
         double width = 1;
         double height = 2;
+        Color color = 3;
     }
     message WidgetImage {
-        string path = 1;    // TODO: replace by asset id from ListAssets
+        string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
+    }
+    message WidgetImageSprite {
+        string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
+        double x = 2;       // Sprite position x
+        double y = 3;       // Sprite position y
+        double width = 4;   // Sprite width
+        double height = 5;  // Sprite height
+    }
+    message WidgetAnimatedImage {
+        string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
+        int32 fps = 2;
+        int32 loops = 3;
+        int64 start_frame = 4;
     }
     message WidgetVideo {
-        string path = 1;    // TODO: replace by asset id from ListAssets
+        string path = 1;            // Path on disk to the video - TODO: replace by asset id from ListAssets
+        double width = 2;
+        double height = 3;
+        float volume = 4;           // Volume of the sound of the video. Set to 0 to disable sound decoding
+        string sound_track = 5;     // Audio track to use for playback
+        int32 loops = 6;            // Number of times this video should loop. -1 for unlimited
     }
+    message WidgetDisplay {
+        uint32 display_id = 1;      // The source display to show
+    }
+    // TODO: WidgetBezier
+    // TODO: WidgetLine
+    // TODO: WidgetPolygon
+    
+    enum AnchorX {
+        TOP = 0;
+        MIDDLE = 1;
+        BOTTOM = 2;
+    }
+
+    enum AnchorY {
+        LEFT = 0;
+        CENTER = 1;
+        RIGHT = 2;
+    }
+
     uint32 slide_id = 1;
     double x = 2;
     double y = 3;
     uint32 z = 4;
-    Color color = 5;
+    double rotation = 5;
+    AnchorX anchor_x = 6;
+    AnchorY anchor_y = 7;
+    double opacity = 8;
     oneof widget {
-        WidgetText text_widget = 6;
-        WidgetRectangle rectangle_widget = 7;
-        WidgetImage image_widget = 8;
-        WidgetVideo video_widget = 9;
-    }
+        WidgetText text_widget = 20;
+        WidgetRectangle rectangle_widget = 21;
+        WidgetImage image_widget = 22;
+        WidgetImageSprite image_sprite_widget = 23;
+        WidgetAnimatedImage animated_image_widget = 24;
+        WidgetVideo video_widget = 25;
+        WidgetDisplay display_widget = 26;
+    }    
 }
 
 message WidgetAddResponse {
