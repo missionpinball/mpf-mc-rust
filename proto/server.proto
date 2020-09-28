@@ -12,12 +12,20 @@ service MediaController {
     //rpc PreloadAsset() returns ();
 }
 
+// Request a new slide in the media controller
 message SlideAddRequest {
-
 }
 
+// Will return the slide id for future reference
 message SlideAddResponse {
     uint32 slide_id = 1;
+}
+
+message SlideRemoveRequest {
+    uint32 slide_id = 1;
+}
+
+message SlideRemoveResponse {
 }
 
 message Color {
@@ -27,61 +35,116 @@ message Color {
     float alpha = 4;
 }
 
+enum LineShape {
+    Square = 0;
+    Round = 1;
+    Bevel = 2;
+}
+
+message ScaleRelative {
+    float factor = 1;
+}
+
+message ScaleAbsolute {
+    double width = 1;
+    double height = 2;
+}
+
+message ScaleAbsoluteKeepAspects {
+    double width = 1;
+    double height = 2;
+}
+
+message ScaleUnchanged {}
+
+message WidgetLabel {
+    string text = 1;        // The text to show
+    float font_size = 2;    // Font size to use
+    string font_name = 3;   // Font to use - TODO: replace by asset id from ListAssets
+    Color color = 4;
+}
+message WidgetRectangle {
+    double width = 1;
+    double height = 2;
+    Color color = 3;
+}
+message WidgetImage {
+    string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
+    oneof scale {
+        ScaleUnchanged unchanged = 10;
+        ScaleRelative relative = 11;
+        ScaleAbsolute absolute = 12;
+        ScaleAbsoluteKeepAspects absolute_keep_aspects = 13;
+    }
+}
+message WidgetImageSprite {
+    string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
+    double x = 2;       // Sprite position x
+    double y = 3;       // Sprite position y
+    double width = 4;   // Sprite width
+    double height = 5;  // Sprite height
+    oneof scale {
+        ScaleUnchanged unchanged = 10;
+        ScaleRelative relative = 11;
+        ScaleAbsolute absolute = 12;
+        ScaleAbsoluteKeepAspects absolute_keep_aspects = 13;
+    }
+}
+message WidgetAnimatedImage {
+    string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
+    int32 fps = 2;
+    int32 loops = 3;
+    int64 start_frame = 4;
+    oneof scale {
+        ScaleUnchanged unchanged = 10;
+        ScaleRelative relative = 11;
+        ScaleAbsolute absolute = 12;
+        ScaleAbsoluteKeepAspects absolute_keep_aspects = 13;
+    }
+}
+message WidgetVideo {
+    string path = 1;            // Path on disk to the video - TODO: replace by asset id from ListAssets
+    float volume = 4;           // Volume of the sound of the video. Set to 0 to disable sound decoding
+    string sound_track = 5;     // Audio track to use for playback
+    int32 loops = 6;            // Number of times this video should loop. -1 for unlimited
+    oneof scale {
+        ScaleUnchanged unchanged = 10;
+        ScaleRelative relative = 11;
+        ScaleAbsoluteKeepAspects absolute_keep_aspects = 12;    // ScaleAbsolute (without keep aspects) is missing here intentionally as that is not supported
+        // TODO: support different scaling algorithms (https://gstreamer.freedesktop.org/documentation/videoscale/index.html?gi-language=c#GstVideoScaleMethod)
+    }
+}
+message WidgetDisplay {
+    uint32 display_id = 1;      // The source display to show
+}
+message WidgetLine {
+    double x1 = 1;
+    double y1 = 2;
+    double x2 = 3;
+    double y2 = 4;
+    Color color = 5;
+    double radius = 6;
+    LineShape shape = 7;
+}
+message WidgetPolygon {
+    // TODO
+}
+message WidgetBezier {
+    // TODO
+}
+
+enum AnchorX {
+    TOP = 0;
+    MIDDLE = 1;
+    BOTTOM = 2;
+}
+enum AnchorY {
+    LEFT = 0;
+    CENTER = 1;
+    RIGHT = 2;
+}
+
 message WidgetAddRequest {
-    message WidgetText {
-        string text = 1;        // The text to show
-        float font_size = 2;    // Font size to use
-        string font_name = 3;   // Font to use - TODO: replace by asset id from ListAssets
-        Color color = 4;
-    }
-    message WidgetRectangle {
-        double width = 1;
-        double height = 2;
-        Color color = 3;
-    }
-    message WidgetImage {
-        string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
-    }
-    message WidgetImageSprite {
-        string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
-        double x = 2;       // Sprite position x
-        double y = 3;       // Sprite position y
-        double width = 4;   // Sprite width
-        double height = 5;  // Sprite height
-    }
-    message WidgetAnimatedImage {
-        string path = 1;    // Path on disk to the image - TODO: replace by asset id from ListAssets
-        int32 fps = 2;
-        int32 loops = 3;
-        int64 start_frame = 4;
-    }
-    message WidgetVideo {
-        string path = 1;            // Path on disk to the video - TODO: replace by asset id from ListAssets
-        double width = 2;
-        double height = 3;
-        float volume = 4;           // Volume of the sound of the video. Set to 0 to disable sound decoding
-        string sound_track = 5;     // Audio track to use for playback
-        int32 loops = 6;            // Number of times this video should loop. -1 for unlimited
-    }
-    message WidgetDisplay {
-        uint32 display_id = 1;      // The source display to show
-    }
-    // TODO: WidgetBezier
-    // TODO: WidgetLine
-    // TODO: WidgetPolygon
-    
-    enum AnchorX {
-        TOP = 0;
-        MIDDLE = 1;
-        BOTTOM = 2;
-    }
-
-    enum AnchorY {
-        LEFT = 0;
-        CENTER = 1;
-        RIGHT = 2;
-    }
-
     uint32 slide_id = 1;
     double x = 2;
     double y = 3;
@@ -91,14 +154,17 @@ message WidgetAddRequest {
     AnchorY anchor_y = 7;
     double opacity = 8;
     oneof widget {
-        WidgetText text_widget = 20;
+        WidgetLabel label_widget = 20;
         WidgetRectangle rectangle_widget = 21;
         WidgetImage image_widget = 22;
         WidgetImageSprite image_sprite_widget = 23;
         WidgetAnimatedImage animated_image_widget = 24;
         WidgetVideo video_widget = 25;
         WidgetDisplay display_widget = 26;
-    }    
+        WidgetLine line_widget = 27;
+        WidgetPolygon polygon_widget = 28;
+        WidgetBezier bezier_widget = 29;
+    }
 }
 
 message WidgetAddResponse {

@@ -1,6 +1,7 @@
 extern crate graphics;
 extern crate piston_window;
 extern crate find_folder;
+extern crate fps_counter;
 
 use piston_window::*;
 mod scene;
@@ -52,6 +53,8 @@ fn main() {
         texture_context
     };
 
+    let mut fps_counter = fps_counter::FPSCounter::new();
+
     //window.set_lazy(true);
     while let Some(e) = window.next() {
         if let Some(args) = e.render_args() {
@@ -60,6 +63,15 @@ fn main() {
                 let c = c.scale(args.window_size[0] / render_size[0], args.window_size[1] / render_size[1]);
                 let current_scene = scene.current_slide.lock().unwrap();
                 current_scene.lock().unwrap().render(&c, g, &mut mc_context);
+
+                let fps = fps_counter.tick();
+                let transform = c.transform.trans(200.0, 30.0);
+                Text::new_color([1.0, 1.0, 1.0, 1.0], 32).draw(
+                    &format!("FPS: {}", fps),
+                    &mut mc_context.glyphs,
+                    &c.draw_state,
+                    transform, g
+                ).unwrap();
 
                 // Update glyphs before rendering.
                 mc_context.glyphs.factory.encoder.flush(device);

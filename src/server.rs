@@ -11,6 +11,7 @@ extern crate gstreamer as gst;
 extern crate gstreamer_app as gst_app;
 extern crate gstreamer_video as gst_video;
 use self::gst_video::prelude::*;
+use gst::gst_element_error;
 
 extern crate image;
 
@@ -24,7 +25,6 @@ pub mod mpf {
 
 }
 
-#[derive(Debug)]
 pub struct MyMediaController {
     scene: Arc<crate::scene::Scene>,
     asset_path: PathBuf
@@ -74,6 +74,7 @@ fn create_video_pipeline(uri: &str) -> gst::Pipeline {
                     (name.starts_with("audio/"), name.starts_with("video/"))
                 })
             });
+            // TODO: get video resolution here and calculate scale ratio
 
             match media_type {
                 None => {
@@ -130,6 +131,11 @@ fn create_video_pipeline(uri: &str) -> gst::Pipeline {
             let sink = gst::ElementFactory::make("appsink", Some("video_sink"))
             .unwrap();
 
+            // TODO: move queue to the end to minimize pull times
+            // TODO: configure videoscale algorithm (https://gstreamer.freedesktop.org/documentation/videoscale/index.html?gi-language=c)
+            // TODO: only instantiate videoscale if configured
+            // TODO: set "add-borders" to false for scale
+
             let elements = &[&queue, &convert, &scale, &sink];
             pipeline.add_many(elements).unwrap();
             gst::Element::link_many(elements).unwrap();
@@ -144,11 +150,42 @@ fn create_video_pipeline(uri: &str) -> gst::Pipeline {
                     .field("format", &gst_video::VideoFormat::Rgba.to_str())
                     .build(),
             ));
+            // TODO: set calculated target resolution here
 
             // Get the queue element's sink pad and link the decodebin's newly created
             // src pad for the video stream to it.
             let sink_pad = queue.get_static_pad("sink").expect("queue has no sinkpad");
             src_pad.link(&sink_pad).unwrap();
+            // sink.set_callbacks(gst_app::AppSinkCallbacks::builder().new_sample(|appsink| {
+            //     let sample = appsink.pull_sample().map_err(|_| gst::FlowError::Eos)?;
+            //     let buffer = sample.get_buffer().ok_or_else(|| {
+            //         gst_element_error!(
+            //             appsink,
+            //             gst::ResourceError::Failed,
+            //             ("Failed to get buffer from appsink")
+            //         );
+
+            //         gst::FlowError::Error
+            //     })?;
+
+            //     // At this point, buffer is only a reference to an existing memory region somewhere.
+            //     // When we want to access its content, we have to map it while requesting the required
+            //     // mode of access (read, read/write).
+            //     // This type of abstraction is necessary, because the buffer in question might not be
+            //     // on the machine's main memory itself, but rather in the GPU's memory.
+            //     // So mapping the buffer makes the underlying memory region accessible to us.
+            //     // See: https://gstreamer.freedesktop.org/documentation/plugin-development/advanced/allocation.html
+            //     let map = buffer.map_readable().map_err(|_| {
+            //         gst_element_error!(
+            //             appsink,
+            //             gst::ResourceError::Failed,
+            //             ("Failed to map buffer readable")
+            //         );
+
+            //         gst::FlowError::Error
+            //     })?;
+            //     Ok(gst::FlowSuccess::Ok)
+            // }).build());
         }
 
     });
@@ -208,11 +245,12 @@ impl MediaController for MyMediaController {
             x: req.x,
             y: req.y,
             z: req.z,
-            id: req.slide_id,            
+            id: req.slide_id,
+            render_state: crate::scene::RenderState::NotRenderedYet,            
             widget: match widget {
-                mpf::widget_add_request::Widget::TextWidget(widget)  => {
+                mpf::widget_add_request::Widget::LabelWidget(widget)  => {
                     let color = widget.color.ok_or(Status::invalid_argument("Missing Color"))?;
-                    crate::scene::WidgetType::Text {
+                    crate::scene::WidgetType::Label {
                         text: widget.text,
                         color: mpf::convert_color(color),
                     }
@@ -230,6 +268,9 @@ impl MediaController for MyMediaController {
 
                     let img = image::open(path).map_err(|e| Status::invalid_argument(e.to_string()))?;
 
+                    // TODO: calculate target size
+                    // TODO: reize here using image::imageops::resize
+
                     let img = match img {
                         image::DynamicImage::ImageRgba8(img) => img,
                         img => img.to_rgba()
@@ -240,28 +281,54 @@ impl MediaController for MyMediaController {
                     }
                 },
                 mpf::widget_add_request::Widget::ImageSpriteWidget(_widget) => {
-                    crate::scene::WidgetType::Text {
+                    crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: [1.0, 1.0, 1.0, 1.0],
                     }
                 },
                 mpf::widget_add_request::Widget::AnimatedImageWidget(_widget) => {
-                    crate::scene::WidgetType::Text {
+                    crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: [1.0, 1.0, 1.0, 1.0],
                     }
                 },
                 mpf::widget_add_request::Widget::VideoWidget(widget) => {
+                    let pipeline = create_video_pipeline(&widget.path);
+
+                    let video_sink = pipeline
+                    .get_by_name("video_sink")
+                    .expect("Sink element not found")
+                    .downcast::<gst_app::AppSink>()
+                    .expect("Sink element is expected to be an appsink!");
                     crate::scene::WidgetType::Video {
-                        pipeline: create_video_pipeline(&widget.path)
+                        pipeline,
+                        video_sink
                     }
                 },
                 mpf::widget_add_request::Widget::DisplayWidget(_widget) => {
-                    crate::scene::WidgetType::Text {
+                    crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: [1.0, 1.0, 1.0, 1.0],
                     }
                 },             
+                mpf::widget_add_request::Widget::LineWidget(_widget) => {
+                    crate::scene::WidgetType::Label {
+                        text: "UNSUPPORTED".into(),
+                        color: [1.0, 1.0, 1.0, 1.0],
+                    }
+                },             
+                mpf::widget_add_request::Widget::PolygonWidget(_widget) => {
+                    crate::scene::WidgetType::Label {
+                        text: "UNSUPPORTED".into(),
+                        color: [1.0, 1.0, 1.0, 1.0],
+                    }
+                },
+                mpf::widget_add_request::Widget::BezierWidget(_widget) => {
+                    crate::scene::WidgetType::Label {
+                        text: "UNSUPPORTED".into(),
+                        color: [1.0, 1.0, 1.0, 1.0],
+                    }
+                },
             }
         };
 
