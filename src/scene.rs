@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::atomic::Ordering};
 use graphics::context::Context;
 use graphics::math::Matrix2d;
 use graphics::text::Text;
@@ -8,10 +8,13 @@ use std::sync::Mutex;
 use std::sync::Arc;
 use texture::*;
 
+use arc_swap::ArcSwapOption;
+
+
 extern crate gstreamer as gst;
 extern crate gstreamer_app as gst_app;
 extern crate gstreamer_video as gst_video;
-use self::gst_video::prelude::*;
+//use self::gst_video::prelude::*;
 
 extern crate image;
 
@@ -58,7 +61,7 @@ pub struct Widget {
     pub z: u32,
     pub id: u32,
     pub widget: WidgetType,
-    pub render_state: RenderState
+    pub render_state: RenderState,
 }
 
 pub enum RenderState {
@@ -68,8 +71,8 @@ pub enum RenderState {
     },
     TextureRendered {
         texture: G2dTexture
-    }
-    
+    },
+    NoContent
 }
 
 pub enum WidgetType {
@@ -95,7 +98,8 @@ pub enum WidgetType {
     },
     Video {
         pipeline: gst::Pipeline,
-        video_sink: gst_app::AppSink
+        video_sink: gst_app::AppSink,
+        video_memory: Arc<ArcSwapOption<gst::Sample>>
     },
     Line {
         line: graphics::line::Line
@@ -109,11 +113,14 @@ impl Widget {
             RenderState::NotRenderedYet => {
                 self.render(c, gl, transform, mc_context)
             }
-            RenderState::TextureDirty { texture } => {
+            RenderState::TextureDirty { .. } => {
                 self.render(c, gl, transform, mc_context)
             }
             RenderState::TextureRendered { texture } => {
                 graphics::image(texture, transform, gl);
+            }
+            RenderState::NoContent => {
+                // Do nothing
             }
         }
     }
@@ -133,7 +140,7 @@ impl Widget {
             WidgetType::Rectacle { width, height, color } => {
                 rectangle(*color, [0.0, 0.0, *width, *height], transform, gl);
             },
-            WidgetType::Video { video_sink, .. } => {
+            WidgetType::Video { video_sink, video_memory, ..} => {
                 if video_sink.is_eos() {
                     if let RenderState::TextureDirty{ texture} = &mut self.render_state {
                         // Take the last rendered frame and keep that for this video
@@ -144,37 +151,23 @@ impl Widget {
                     }
                     return
                 }
-                
-                let sample = video_sink.pull_sample().unwrap();
-                let buffer = sample.get_buffer().unwrap();
-            
-                let caps = sample.get_caps().expect("Sample without caps");
-                let info = gst_video::VideoInfo::from_caps(&caps).expect("Failed to parse caps");
-            
-                // At this point, buffer is only a reference to an existing memory region somewhere.
-                // When we want to access its content, we have to map it while requesting the required
-                // mode of access (read, read/write).
-                // This type of abstraction is necessary, because the buffer in question might not be
-                // on the machine's main memory itself, but rather in the GPU's memory.
-                // So mapping the buffer makes the underlying memory region accessible to us.
-                // See: https://gstreamer.freedesktop.org/documentation/plugin-development/advanced/allocation.html
-                let map = buffer.map_readable().unwrap();
-            
-                let size = [info.width(), info.height()];
+                let frame = video_memory.as_ref().load();
+                if let Some(frame) = frame.as_ref() {
+                    let buffer = frame.get_buffer().unwrap();
+                    let caps = frame.get_caps().expect("Sample without caps");
+                    let info = gst_video::VideoInfo::from_caps(&caps).expect("Failed to parse caps");
+                    let map = buffer.map_readable().unwrap();
+        
+                    let size = [info.width(), info.height()];
 
-                // TODO: move do this into gstreamer
-                let transform = transform.scale(0.1, 0.1);
-                
-                /*if let RenderState::TextureDirty{ texture} = &mut self.render_state {
-                    UpdateTexture::update(&mut *texture, &mut mc_context.texture_context, 
-                        Format::Rgba8, &map, [0, 0], size).unwrap();
-                    graphics::image(texture, transform, gl);
-                } else {*/
+                    // TODO: move do this into gstreamer
+                    let transform = transform.scale(0.1, 0.1);
+                    
                     let texture = CreateTexture::create(&mut mc_context.texture_context, 
                         Format::Rgba8, &map, size, &TextureSettings::new()).unwrap();
                     graphics::image(&texture, transform, gl);
                     self.render_state = RenderState::TextureDirty{texture};
-                //}
+                }
             },
             WidgetType::Image { image  } => {                
                 let texture: G2dTexture = Texture::from_image(

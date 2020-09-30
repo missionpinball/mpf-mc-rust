@@ -10,8 +10,12 @@ use std::path::PathBuf;
 extern crate gstreamer as gst;
 extern crate gstreamer_app as gst_app;
 extern crate gstreamer_video as gst_video;
+
 use self::gst_video::prelude::*;
-use gst::gst_element_error;
+use gst::{glib, gst_element_error};
+use gst::{BufferMap, buffer::Readable};
+
+use arc_swap::ArcSwapOption;
 
 extern crate image;
 
@@ -30,7 +34,7 @@ pub struct MyMediaController {
     asset_path: PathBuf
 }
 
-fn create_video_pipeline(uri: &str) -> gst::Pipeline {
+fn create_video_pipeline(uri: &str, video_memory: Arc<ArcSwapOption<gst::Sample>>) -> gst::Pipeline {
     let pipeline = gst::Pipeline::new(None);
     let src = gst::ElementFactory::make("filesrc", None).unwrap();
     let decodebin =
@@ -131,7 +135,10 @@ fn create_video_pipeline(uri: &str) -> gst::Pipeline {
             let sink = gst::ElementFactory::make("appsink", Some("video_sink"))
             .unwrap();
 
-            // TODO: move queue to the end to minimize pull times
+            //convert.set_property("n-threads", &2u32.to_value()).unwrap();
+            //queue.set_property("max-size-bytes", &100485760u32.to_value()).unwrap();
+            //queue.set_property_from_str("leaky", "upstream");
+
             // TODO: configure videoscale algorithm (https://gstreamer.freedesktop.org/documentation/videoscale/index.html?gi-language=c)
             // TODO: only instantiate videoscale if configured
             // TODO: set "add-borders" to false for scale
@@ -156,36 +163,12 @@ fn create_video_pipeline(uri: &str) -> gst::Pipeline {
             // src pad for the video stream to it.
             let sink_pad = queue.get_static_pad("sink").expect("queue has no sinkpad");
             src_pad.link(&sink_pad).unwrap();
-            // sink.set_callbacks(gst_app::AppSinkCallbacks::builder().new_sample(|appsink| {
-            //     let sample = appsink.pull_sample().map_err(|_| gst::FlowError::Eos)?;
-            //     let buffer = sample.get_buffer().ok_or_else(|| {
-            //         gst_element_error!(
-            //             appsink,
-            //             gst::ResourceError::Failed,
-            //             ("Failed to get buffer from appsink")
-            //         );
-
-            //         gst::FlowError::Error
-            //     })?;
-
-            //     // At this point, buffer is only a reference to an existing memory region somewhere.
-            //     // When we want to access its content, we have to map it while requesting the required
-            //     // mode of access (read, read/write).
-            //     // This type of abstraction is necessary, because the buffer in question might not be
-            //     // on the machine's main memory itself, but rather in the GPU's memory.
-            //     // So mapping the buffer makes the underlying memory region accessible to us.
-            //     // See: https://gstreamer.freedesktop.org/documentation/plugin-development/advanced/allocation.html
-            //     let map = buffer.map_readable().map_err(|_| {
-            //         gst_element_error!(
-            //             appsink,
-            //             gst::ResourceError::Failed,
-            //             ("Failed to map buffer readable")
-            //         );
-
-            //         gst::FlowError::Error
-            //     })?;
-            //     Ok(gst::FlowSuccess::Ok)
-            // }).build());
+            let video_memory = video_memory.clone();
+            sink.set_callbacks(gst_app::AppSinkCallbacks::builder().new_sample(move |appsink| {
+                let sample = appsink.pull_sample().map_err(|_| gst::FlowError::Eos)?;
+                video_memory.swap(Some(Arc::new(sample)));
+                Ok(gst::FlowSuccess::Ok)
+            }).build());
         }
 
     });
@@ -293,7 +276,8 @@ impl MediaController for MyMediaController {
                     }
                 },
                 mpf::widget_add_request::Widget::VideoWidget(widget) => {
-                    let pipeline = create_video_pipeline(&widget.path);
+                    let video_memory = Arc::new(ArcSwapOption::from(None));
+                    let pipeline = create_video_pipeline(&widget.path, video_memory.clone());
 
                     let video_sink = pipeline
                     .get_by_name("video_sink")
@@ -302,7 +286,8 @@ impl MediaController for MyMediaController {
                     .expect("Sink element is expected to be an appsink!");
                     crate::scene::WidgetType::Video {
                         pipeline,
-                        video_sink
+                        video_sink,
+                        video_memory
                     }
                 },
                 mpf::widget_add_request::Widget::DisplayWidget(_widget) => {

@@ -12,6 +12,8 @@ piston-texture = "0.8.0"
 find_folder = "0.3.0"
 image = "0.23.9"
 
+arc-swap = "0.4.7"
+
 fps_counter = "1.0.0"
 
 gstreamer = "0.16.3"

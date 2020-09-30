@@ -64,6 +64,7 @@ fn main() {
                 let current_scene = scene.current_slide.lock().unwrap();
                 current_scene.lock().unwrap().render(&c, g, &mut mc_context);
 
+                // Render FPS for now
                 let fps = fps_counter.tick();
                 let transform = c.transform.trans(200.0, 30.0);
                 Text::new_color([1.0, 1.0, 1.0, 1.0], 32).draw(

@@ -57,6 +57,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "arc-swap"
+version = "0.4.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d25d88fd6b8041580a654f9d0c581a047baee2b3efee13275f2fc392fc75034"
+
+[[package]]
 name = "async-stream"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1169,6 +1175,7 @@ dependencies = [
 name = "mpf-mc-rust"
 version = "0.1.0"
 dependencies = [
+ "arc-swap",
  "find_folder",
  "fps_counter",
  "gstreamer",
