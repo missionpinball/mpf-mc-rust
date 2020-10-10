@@ -1,15 +1,16 @@
-use std::{collections::HashMap, sync::atomic::Ordering};
-use graphics::context::Context;
-use graphics::math::Matrix2d;
-use graphics::text::Text;
-use crate::graphics::Transformed;
-use piston_window::*;
+use std::{collections::HashMap};
 use std::sync::Mutex;
 use std::sync::Arc;
-use texture::*;
+
+use ggez::{Context, graphics::DrawParam};
+use ggez::graphics;
+
 
 use arc_swap::ArcSwapOption;
 
+
+type Point2 = cgmath::Point2<f32>;
+type Vector2 = cgmath::Vector2<f32>;
 
 extern crate gstreamer as gst;
 extern crate gstreamer_app as gst_app;
@@ -48,42 +49,57 @@ pub struct Slide {
 }
 
 impl Slide {
-    pub fn render(&mut self, c: &Context, gl: &mut G2d, mc_context: &mut super::MediaControllerContext) {
+    pub fn draw(&mut self, ctx: &mut Context, origin: Point2) {
         for widget in &mut self.widgets {
-            widget.draw(c, gl, mc_context);
+            widget.draw(ctx, origin);
+        }
+    }
+
+    pub fn update(&mut self, ctx: &mut Context) {
+        for widget in &mut self.widgets {
+            if let UpdateState::NeedsUpdate = widget.update_state {
+                widget.update(ctx);
+            }
         }
     }
 }
 
 pub struct Widget {
-    pub x: f64,
-    pub y: f64,
+    pub x: f32,
+    pub y: f32,
     pub z: u32,
     pub id: u32,
     pub widget: WidgetType,
     pub render_state: RenderState,
+    pub update_state: UpdateState,
 }
 
 pub enum RenderState {
-    NotRenderedYet,
-    TextureDirty {
-        texture: G2dTexture
+    ImageTextureRendered {
+        image_texture: graphics::Image
     },
-    TextureRendered {
-        texture: G2dTexture
+    CanvasRendered {
+        canvas: graphics::Canvas
     },
     NoContent
+}
+
+pub enum UpdateState {
+    NeedsUpdate,
+    Clean,
 }
 
 pub enum WidgetType {
     Label {
         text: String,
-        color: graphics::types::Color,
+        color: graphics::Color,
+        font: Option<graphics::Font>,
+        font_size: u32
     },
     Rectacle {
         width: f64,
         height: f64,
-        color: graphics::types::Color,
+        color: graphics::Color,
     },
     Image {
         image: image::RgbaImage
@@ -102,22 +118,23 @@ pub enum WidgetType {
         video_memory: Arc<ArcSwapOption<gst::Sample>>
     },
     Line {
-        line: graphics::line::Line
+        x1: f64,
+        x2: f64,
+        y1: f64,
+        y2: f64,
     }
 }
 
 impl Widget {
-    fn draw(&mut self, c: &Context, gl: &mut G2d, mc_context: &mut super::MediaControllerContext) {
-        let transform = c.transform.trans(self.x, self.y);
+    fn draw(&mut self, ctx: &mut Context, origin: Point2) {
+        // TODO: fix transform here
+        let draw_param = DrawParam::default().dest(Point2::new(self.x, self.y));
         match &self.render_state {
-            RenderState::NotRenderedYet => {
-                self.render(c, gl, transform, mc_context)
+            RenderState::ImageTextureRendered { image_texture} => {
+                graphics::draw(ctx, image_texture, draw_param).unwrap();
             }
-            RenderState::TextureDirty { .. } => {
-                self.render(c, gl, transform, mc_context)
-            }
-            RenderState::TextureRendered { texture } => {
-                graphics::image(texture, transform, gl);
+            RenderState::CanvasRendered { canvas } => {
+                graphics::draw(ctx, canvas, draw_param).unwrap();
             }
             RenderState::NoContent => {
                 // Do nothing
@@ -125,30 +142,57 @@ impl Widget {
         }
     }
 
-    fn render(&mut self, c: &Context, gl: &mut G2d, transform: Matrix2d, mc_context: &mut super::MediaControllerContext) {
-        
-
+    fn update(&mut self, ctx: &mut Context) {
         match &mut self.widget {
-            WidgetType::Label { text, color} => {
-                Text::new_color(*color, 32).draw(
-                                text,
-                                &mut mc_context.glyphs,
-                                &c.draw_state,
-                                transform, gl
-                            ).unwrap();
+            WidgetType::Label { text, color, font_size, font} => {
+                let loaded_font;
+                match font.as_mut() {
+                    None => {
+                        loaded_font = graphics::Font::new(ctx, "/DejaVuSerif.ttf").unwrap();
+                        *font = Some(loaded_font);
+                    },
+                    Some(v) => {
+                        loaded_font = *v;
+                    }
+                }
+                    
+                let text = graphics::Text::new((text.to_string(), loaded_font, *font_size as f32));
+                let (width, height) = text.dimensions(ctx);
+                let canvas = graphics::Canvas::new(ctx, width as u16, height as u16, ggez::conf::NumSamples::One).unwrap();
+
+                graphics::set_canvas(ctx, Some(&canvas));
+                graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, width as f32, height as f32)).unwrap();
+                graphics::clear(ctx, graphics::Color::from((0, 0, 0, 0)));
+                graphics::draw(ctx, &text, graphics::DrawParam::new().color(*color)).unwrap();
+                graphics::set_canvas(ctx, None);
+
+                let (w, h) = graphics::drawable_size(ctx);
+                graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, w, h)).unwrap();
+
+                self.render_state = RenderState::CanvasRendered{canvas};
+                self.update_state = UpdateState::Clean;
             }
             WidgetType::Rectacle { width, height, color } => {
-                rectangle(*color, [0.0, 0.0, *width, *height], transform, gl);
+                let rect_dimensions = graphics::Rect::new(0.0, 0.0, *width as f32, *height as f32);
+                let rect = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_dimensions, *color).unwrap();
+                let canvas = graphics::Canvas::new(ctx, *width as u16, *height as u16, ggez::conf::NumSamples::One).unwrap();
+
+                graphics::set_canvas(ctx, Some(&canvas));
+                graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, *width as f32, *height as f32)).unwrap();
+                graphics::clear(ctx, graphics::Color::from((0, 0, 0, 0)));
+                graphics::draw(ctx, &rect, graphics::DrawParam::new().color(*color)).unwrap();
+                graphics::set_canvas(ctx, None);
+
+                let (w, h) = graphics::drawable_size(ctx);
+                graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, w, h)).unwrap();
+
+                self.render_state = RenderState::CanvasRendered{canvas};
+                self.update_state = UpdateState::Clean;
+
             },
             WidgetType::Video { video_sink, video_memory, ..} => {
                 if video_sink.is_eos() {
-                    if let RenderState::TextureDirty{ texture} = &mut self.render_state {
-                        // Take the last rendered frame and keep that for this video
-                        graphics::image(texture, transform, gl);
-                        self.render_state = RenderState::TextureRendered {                            
-                            texture: texture.clone()
-                        };
-                    }
+                    self.update_state = UpdateState::Clean;
                     return
                 }
                 let frame = video_memory.as_ref().load();
@@ -156,27 +200,20 @@ impl Widget {
                     let buffer = frame.get_buffer().unwrap();
                     let caps = frame.get_caps().expect("Sample without caps");
                     let info = gst_video::VideoInfo::from_caps(&caps).expect("Failed to parse caps");
-                    let map = buffer.map_readable().unwrap();
-        
-                    let size = [info.width(), info.height()];
-
+                    let image = buffer.map_readable().unwrap();
+    
                     // TODO: move do this into gstreamer
-                    let transform = transform.scale(0.1, 0.1);
-                    
-                    let texture = CreateTexture::create(&mut mc_context.texture_context, 
-                        Format::Rgba8, &map, size, &TextureSettings::new()).unwrap();
-                    graphics::image(&texture, transform, gl);
-                    self.render_state = RenderState::TextureDirty{texture};
+                    //let transform = transform.scale(0.1, 0.1);
+                
+                    let image_texture = graphics::Image::from_rgba8(ctx, info.width() as u16, info.height() as u16, &image).unwrap();
+                    self.render_state = RenderState::ImageTextureRendered{image_texture};
                 }
             },
-            WidgetType::Image { image  } => {                
-                let texture: G2dTexture = Texture::from_image(
-                    &mut mc_context.texture_context,
-                    &image,
-                    &TextureSettings::new()
-                ).unwrap();                
-                graphics::image(&texture, transform, gl);
-                self.render_state = RenderState::TextureRendered{texture};
+            WidgetType::Image { image  } => {
+                let (width, height) = image.dimensions();
+                let image_texture = graphics::Image::from_rgba8(ctx, width as u16, height as u16, &image).unwrap();
+                self.render_state = RenderState::ImageTextureRendered{image_texture};
+                self.update_state = UpdateState::Clean;
             }
             WidgetType::ImageSprite { image } => {
 
@@ -184,8 +221,24 @@ impl Widget {
             WidgetType::ImageAnimated { image } => {
 
             }
-            WidgetType::Line { line } => {
+            WidgetType::Line { x1, x2, y1, y2 } => {
+                /*
+                let rect_dimensions = graphics::Rect::new(0.0, 0.0, *width as f32, *height as f32);
+                let rect = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_dimensions, *color).unwrap();
+                let canvas = graphics::Canvas::new(ctx, *width as u16, *height as u16, ggez::conf::NumSamples::One).unwrap();
 
+                graphics::set_canvas(ctx, Some(&canvas));
+                graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, *width as f32, *height as f32)).unwrap();
+                graphics::clear(ctx, graphics::Color::from((0, 0, 0, 0)));
+                graphics::draw(ctx, &rect, graphics::DrawParam::new().color(*color)).unwrap();
+                graphics::set_canvas(ctx, None);
+
+                let (w, h) = graphics::drawable_size(ctx);
+                graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, w, h)).unwrap();
+
+                self.render_state = RenderState::CanvasRendered{canvas};
+                self.update_state = UpdateState::Clean;
+                */
             }
         }
     }

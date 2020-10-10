@@ -7,13 +7,15 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::path::PathBuf;
 
+use ggez::graphics;
+
 extern crate gstreamer as gst;
 extern crate gstreamer_app as gst_app;
 extern crate gstreamer_video as gst_video;
 
 use self::gst_video::prelude::*;
-use gst::{glib, gst_element_error};
-use gst::{BufferMap, buffer::Readable};
+//use gst::{glib, gst_element_error};
+//use gst::{BufferMap, buffer::Readable};
 
 use arc_swap::ArcSwapOption;
 
@@ -21,10 +23,12 @@ extern crate image;
 
 
 pub mod mpf {
+    use ggez::graphics;
+
     tonic::include_proto!("mpf");
 
-    pub fn convert_color(color: Color) -> graphics::types::Color {
-        [color.red, color.green, color.blue, color.alpha]
+    pub fn convert_color(color: Color) -> graphics::Color {
+        graphics::Color::new(color.red, color.green, color.blue, color.alpha)
     }
 
 }
@@ -225,17 +229,20 @@ impl MediaController for MyMediaController {
         let widget = req.widget.ok_or(Status::invalid_argument("Missing Widget Type"))?;        
        
         let new_widget = crate::scene::Widget {
-            x: req.x,
-            y: req.y,
+            x: req.x as f32,
+            y: req.y as f32,
             z: req.z,
             id: req.slide_id,
-            render_state: crate::scene::RenderState::NotRenderedYet,            
+            render_state: crate::scene::RenderState::NoContent,
+            update_state: crate::scene::UpdateState::NeedsUpdate,
             widget: match widget {
                 mpf::widget_add_request::Widget::LabelWidget(widget)  => {
                     let color = widget.color.ok_or(Status::invalid_argument("Missing Color"))?;
                     crate::scene::WidgetType::Label {
                         text: widget.text,
                         color: mpf::convert_color(color),
+                        font_size: widget.font_size as u32,
+                        font: None
                     }
                 },
                 mpf::widget_add_request::Widget::RectangleWidget(widget) => {
@@ -266,13 +273,17 @@ impl MediaController for MyMediaController {
                 mpf::widget_add_request::Widget::ImageSpriteWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
-                        color: [1.0, 1.0, 1.0, 1.0],
+                        color: graphics::WHITE,
+                        font_size: 32,
+                        font: None
                     }
                 },
                 mpf::widget_add_request::Widget::AnimatedImageWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
-                        color: [1.0, 1.0, 1.0, 1.0],
+                        color: graphics::WHITE,
+                        font_size: 32,
+                        font: None
                     }
                 },
                 mpf::widget_add_request::Widget::VideoWidget(widget) => {
@@ -293,25 +304,33 @@ impl MediaController for MyMediaController {
                 mpf::widget_add_request::Widget::DisplayWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
-                        color: [1.0, 1.0, 1.0, 1.0],
+                        color: graphics::WHITE,
+                        font_size: 32,
+                        font: None
                     }
                 },             
                 mpf::widget_add_request::Widget::LineWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
-                        color: [1.0, 1.0, 1.0, 1.0],
+                        color: graphics::WHITE,
+                        font_size: 32,
+                        font: None
                     }
                 },             
                 mpf::widget_add_request::Widget::PolygonWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
-                        color: [1.0, 1.0, 1.0, 1.0],
+                        color: graphics::WHITE,
+                        font_size: 32,
+                        font: None
                     }
                 },
                 mpf::widget_add_request::Widget::BezierWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
-                        color: [1.0, 1.0, 1.0, 1.0],
+                        color: graphics::WHITE,
+                        font_size: 32,
+                        font: None
                     }
                 },
             }

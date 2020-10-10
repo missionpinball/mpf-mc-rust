@@ -59,7 +59,7 @@ message ScaleUnchanged {}
 
 message WidgetLabel {
     string text = 1;        // The text to show
-    float font_size = 2;    // Font size to use
+    int32 font_size = 2;    // Font size to use
     string font_name = 3;   // Font to use - TODO: replace by asset id from ListAssets
     Color color = 4;
 }

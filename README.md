@@ -6,8 +6,8 @@ Compile and run
 
 * Install Rust via https://rustup.rs/
 * Install gstreamer according to: https://crates.io/crates/gstreamer
-* Create an `assets` folder
-* Download Fire Sans from https://fonts.google.com/specimen/Fira+Sans, uzip and put `FiraSans-Regular.ttf` into the `assets` folder
+* Create an `resources` folder
+* Download `https://github.com/ggez/ggez/raw/master/resources/DejaVuSerif.ttf` and put it into the `resources` folder
 * Run `cargo run` within the repository
 
 Test using the Python Demo Client
