@@ -69,10 +69,9 @@ fn main() -> GameResult {
     };
 
     let scene_server = scene.clone();
-    let asset_path = resource_dir.clone();    
     thread::spawn(move || {
         let mut rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(server::serve(scene_server, asset_path));
+        rt.block_on(server::serve(scene_server));
     });
 
     let cb = ggez::ContextBuilder::new("MPF Media Controller", "jab").add_resource_path(resource_dir);

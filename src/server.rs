@@ -35,7 +35,6 @@ pub mod mpf {
 
 pub struct MyMediaController {
     scene: Arc<crate::scene::Scene>,
-    asset_path: PathBuf
 }
 
 fn create_video_pipeline(uri: &str, video_memory: Arc<ArcSwapOption<gst::Sample>>) -> gst::Pipeline {
@@ -348,11 +347,10 @@ impl MediaController for MyMediaController {
     }
 }
 
-pub async fn serve(scene: Arc<crate::scene::Scene>, asset_path: PathBuf) {
+pub async fn serve(scene: Arc<crate::scene::Scene>) {
     let addr = "[::1]:50051".parse().unwrap();
     let mc = MyMediaController{
         scene,
-        asset_path
     };
 
     Server::builder()
