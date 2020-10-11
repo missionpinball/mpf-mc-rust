@@ -58,7 +58,7 @@ impl event::EventHandler for MainState {
     }
 }
 
-fn create_gl_context(ctx: &mut Context) -> gst_gl::GLContext {
+fn create_gst_gl_context(ctx: &mut Context) -> gst_gl::GLContext {
     let windowed_context = graphics::window_raw(ctx);
     let raw_handle = unsafe { windowed_context.raw_handle() };
     let inner_window = windowed_context.window();
@@ -130,16 +130,17 @@ fn main() -> GameResult {
         path::PathBuf::from("./resources")
     };
 
-    let scene_server = scene.clone();
-    thread::spawn(move || {
-        let mut rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(server::serve(scene_server));
-    });
-
     let cb = ggez::ContextBuilder::new("MPF Media Controller", "jab").add_resource_path(resource_dir);
     let cb = cb.window_setup(ggez::conf::WindowSetup::default().title("MPF Media Controller"));
     let (ctx, events_loop) = &mut cb.build()?;
-    let gst_context = create_gl_context(ctx);
+    let gst_gl_context = create_gst_gl_context(ctx);
+
+    let scene_server = scene.clone();
+    thread::spawn(move || {
+        let mut rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(server::serve(scene_server, gst_gl_context));
+    });
+
     let state = &mut MainState::new(ctx, scene)?;
     event::run(ctx, events_loop, state)
 }
