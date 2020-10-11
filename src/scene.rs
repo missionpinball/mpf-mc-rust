@@ -4,13 +4,9 @@ use std::sync::Arc;
 
 use ggez::{Context, graphics::DrawParam};
 use ggez::graphics;
-
+use ggez::nalgebra::Point2;
 
 use arc_swap::ArcSwapOption;
-
-
-type Point2 = cgmath::Point2<f32>;
-type Vector2 = cgmath::Vector2<f32>;
 
 extern crate gstreamer as gst;
 extern crate gstreamer_app as gst_app;
@@ -49,7 +45,7 @@ pub struct Slide {
 }
 
 impl Slide {
-    pub fn draw(&mut self, ctx: &mut Context, origin: Point2) {
+    pub fn draw(&mut self, ctx: &mut Context, origin: Point2<f32>) {
         for widget in &mut self.widgets {
             widget.draw(ctx, origin);
         }
@@ -126,7 +122,7 @@ pub enum WidgetType {
 }
 
 impl Widget {
-    fn draw(&mut self, ctx: &mut Context, origin: Point2) {
+    fn draw(&mut self, ctx: &mut Context, origin: Point2<f32>) {
         // TODO: fix transform here
         let draw_param = DrawParam::default().dest(Point2::new(self.x, self.y));
         match &self.render_state {
@@ -158,7 +154,7 @@ impl Widget {
                     
                 let text = graphics::Text::new((text.to_string(), loaded_font, *font_size as f32));
                 let (width, height) = text.dimensions(ctx);
-                let canvas = graphics::Canvas::new(ctx, width as u16, height as u16, ggez::conf::NumSamples::One).unwrap();
+                let canvas = graphics::Canvas::new(ctx, width as u16, height as u16, ggez::conf::NumSamples::One, graphics::get_window_color_format(ctx)).unwrap();
 
                 graphics::set_canvas(ctx, Some(&canvas));
                 graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, width as f32, height as f32)).unwrap();
@@ -175,7 +171,7 @@ impl Widget {
             WidgetType::Rectacle { width, height, color } => {
                 let rect_dimensions = graphics::Rect::new(0.0, 0.0, *width as f32, *height as f32);
                 let rect = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect_dimensions, *color).unwrap();
-                let canvas = graphics::Canvas::new(ctx, *width as u16, *height as u16, ggez::conf::NumSamples::One).unwrap();
+                let canvas = graphics::Canvas::new(ctx, *width as u16, *height as u16, ggez::conf::NumSamples::One, graphics::get_window_color_format(ctx)).unwrap();
 
                 graphics::set_canvas(ctx, Some(&canvas));
                 graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, *width as f32, *height as f32)).unwrap();

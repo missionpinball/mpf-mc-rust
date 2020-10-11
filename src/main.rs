@@ -1,5 +1,4 @@
 extern crate ggez;
-extern crate cgmath;
 
 use ggez::event;
 use ggez::graphics;
@@ -8,8 +7,7 @@ use ggez::{Context, GameResult};
 use std::env;
 use std::path;
 
-type Point2 = cgmath::Point2<f32>;
-type Vector2 = cgmath::Vector2<f32>;
+use ggez::nalgebra::Point2;
 
 mod scene;
 mod server;
