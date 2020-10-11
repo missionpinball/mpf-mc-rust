@@ -18,3 +18,7 @@ Test using the Python Demo Client
 * Modify the image/video path in `test.py` to an existing image on your disk
 * Run `python3 test.py`
 
+Debugging Gstreamer
+-------------------
+
+Run using `GST_DEBUG=2 RUST_BACKTRACE=full cargo run`
