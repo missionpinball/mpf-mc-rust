@@ -5,7 +5,9 @@ authors = ["Jan Kantert <jan-mpf@kantert.net>"]
 edition = "2018"
 
 [dependencies]
-ggez = { version = "0.5.1", features = ["bzip2"], path = "../ggez" }
+ggez = { version = "0.5.1", features = ["bzip2", "gst-gl"], path = "../ggez" }
+
+glutin = "0.21"
 
 #piston = "0.52.0"
 #piston2d-graphics = "0.37.0"
@@ -28,6 +30,7 @@ fps_counter = "1.0.0"
 gstreamer = "0.16.3"
 gstreamer-app = "0.16.3"
 gstreamer-video = "0.16.3"
+gstreamer-gl = { versopm = "0.16.3", features = ["wayland", "egl", "x11"] }
 
 tonic = "0.3"
 prost = "0.6"
