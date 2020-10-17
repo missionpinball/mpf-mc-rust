@@ -1,11 +1,14 @@
+#[cfg(feature = "gst-gl-video")]
+use gstreamer_gl::ContextGLExt;
+
 use tonic::{transport::Server, Request, Response, Status};
 
 use mpf::media_controller_server::{MediaController, MediaControllerServer};
 use mpf::*;
 
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::path::PathBuf;
 
 use ggez::graphics;
 
@@ -13,14 +16,14 @@ extern crate gstreamer as gst;
 extern crate gstreamer_app as gst_app;
 extern crate gstreamer_video as gst_video;
 
+#[cfg(feature = "gst-gl-video")]
+extern crate gstreamer_gl as gst_gl;
+
 use self::gst_video::prelude::*;
-//use gst::{glib, gst_element_error};
-//use gst::{BufferMap, buffer::Readable};
 
 use arc_swap::ArcSwapOption;
 
 extern crate image;
-
 
 pub mod mpf {
     use ggez::graphics;
@@ -30,19 +33,68 @@ pub mod mpf {
     pub fn convert_color(color: Color) -> graphics::Color {
         graphics::Color::new(color.red, color.green, color.blue, color.alpha)
     }
-
 }
 
 pub struct MyMediaController {
     scene: Arc<crate::scene::Scene>,
+    #[cfg(feature = "gst-gl-video")]
     gst_gl_context: gst_gl::GLContext,
+    #[cfg(feature = "gst-gl-video")]
+    gl_display: gst_gl::GLDisplay,
 }
 
-fn create_video_pipeline(uri: &str, video_memory: Arc<ArcSwapOption<gst::Sample>>) -> gst::Pipeline {
+fn create_video_pipeline(
+    uri: &str,
+    video_memory: Arc<ArcSwapOption<gst::Sample>>,
+    #[cfg(feature = "gst-gl-video")] gl_context: gst_gl::GLContext,
+    #[cfg(feature = "gst-gl-video")] gl_display: gst_gl::GLDisplay,
+) -> gst::Pipeline {
     let pipeline = gst::Pipeline::new(None);
     let src = gst::ElementFactory::make("filesrc", None).unwrap();
-    let decodebin =
-        gst::ElementFactory::make("decodebin", None).unwrap();
+    let decodebin = gst::ElementFactory::make("decodebin", None).unwrap();
+
+    #[cfg(feature = "gst-gl-video")]
+    {
+        let bus = pipeline
+            .get_bus()
+            .expect("Pipeline without bus. Shouldn't happen!");
+
+        let gl_context = gl_context.clone();
+        #[allow(clippy::single_match)]
+        bus.set_sync_handler(move |_, msg| {
+            match msg.view() {
+                gst::MessageView::NeedContext(ctxt) => {
+                    let context_type = ctxt.get_context_type();
+                    if context_type == *gst_gl::GL_DISPLAY_CONTEXT_TYPE {
+                        if let Some(el) =
+                            msg.get_src().map(|s| s.downcast::<gst::Element>().unwrap())
+                        {
+                            let context = gst::Context::new(context_type, true);
+                            context.set_gl_display(&gl_display);
+                            println!("DISPLAY");
+                            el.set_context(&context);
+                        }
+                    }
+                    if context_type == "gst.gl.app_context" {
+                        if let Some(el) =
+                            msg.get_src().map(|s| s.downcast::<gst::Element>().unwrap())
+                        {
+                            let mut context = gst::Context::new(context_type, true);
+                            {
+                                let context = context.get_mut().unwrap();
+                                let s = context.get_mut_structure();
+                                println!("GL CONTEXT");
+                                s.set_value("context", gl_context.to_send_value());
+                            }
+                            el.set_context(&context);
+                        }
+                    }
+                }
+                _ => (),
+            }
+            gst::BusSyncReply::Pass
+        });
+    }
 
     // Tell the filesrc what file to load
     src.set_property("location", &uri).unwrap();
@@ -101,14 +153,10 @@ fn create_video_pipeline(uri: &str, video_memory: Arc<ArcSwapOption<gst::Sample>
         if is_audio {
             // decodebin found a raw audiostream, so we build the follow-up pipeline to
             // play it on the default audio playback device (using autoaudiosink).
-            let queue = gst::ElementFactory::make("queue", None)
-            .unwrap();
-            let convert = gst::ElementFactory::make("audioconvert", None)
-            .unwrap();
-            let resample = gst::ElementFactory::make("audioresample", None)
-            .unwrap();
-            let sink = gst::ElementFactory::make("appsink", Some("audio_sink"))
-            .unwrap();
+            let queue = gst::ElementFactory::make("queue", None).unwrap();
+            let convert = gst::ElementFactory::make("audioconvert", None).unwrap();
+            let resample = gst::ElementFactory::make("audioresample", None).unwrap();
+            let sink = gst::ElementFactory::make("appsink", Some("audio_sink")).unwrap();
 
             let elements = &[&queue, &convert, &resample, &sink];
             pipeline.add_many(elements).unwrap();
@@ -128,16 +176,31 @@ fn create_video_pipeline(uri: &str, video_memory: Arc<ArcSwapOption<gst::Sample>
             src_pad.link(&sink_pad).unwrap();
         }
         if is_video {
-            // decodebin found a raw videostream, so we build the follow-up pipeline to
-            // display it using the autovideosink.
-            let queue = gst::ElementFactory::make("queue", None)
-            .unwrap();
-            let convert = gst::ElementFactory::make("videoconvert", None)
-            .unwrap();
-            let scale = gst::ElementFactory::make("videoscale", None)
-            .unwrap();
-            let sink = gst::ElementFactory::make("appsink", Some("video_sink"))
-            .unwrap();
+            let appsink;
+            let first_element;
+            if cfg!(feature = "gst-gl-video") {
+                first_element = gst::ElementFactory::make("glupload", Some("video_sink")).unwrap();
+                appsink = gst::ElementFactory::make("appsink", Some("app_sink")).unwrap();
+                let elements = &[&first_element, &appsink];
+                pipeline.add_many(elements).unwrap();
+                gst::Element::link_many(elements).unwrap();
+
+                for e in elements {
+                    e.sync_state_with_parent().unwrap()
+                }
+            } else {
+                first_element = gst::ElementFactory::make("queue", None).unwrap();
+                let convert = gst::ElementFactory::make("videoconvert", None).unwrap();
+                let scale = gst::ElementFactory::make("videoscale", None).unwrap();
+                appsink = gst::ElementFactory::make("appsink", Some("app_sink")).unwrap();
+                let elements = &[&first_element, &convert, &scale, &appsink];
+                pipeline.add_many(elements).unwrap();
+                gst::Element::link_many(elements).unwrap();
+
+                for e in elements {
+                    e.sync_state_with_parent().unwrap()
+                }
+            }
 
             //convert.set_property("n-threads", &2u32.to_value()).unwrap();
             //queue.set_property("max-size-bytes", &100485760u32.to_value()).unwrap();
@@ -147,87 +210,97 @@ fn create_video_pipeline(uri: &str, video_memory: Arc<ArcSwapOption<gst::Sample>
             // TODO: only instantiate videoscale if configured
             // TODO: set "add-borders" to false for scale
 
-            let elements = &[&queue, &convert, &scale, &sink];
-            pipeline.add_many(elements).unwrap();
-            gst::Element::link_many(elements).unwrap();
-
-            for e in elements {
-                e.sync_state_with_parent().unwrap()
+            let appsink = appsink.downcast::<gst_app::AppSink>().unwrap();
+            if cfg!(feature = "gst-gl-video") {
+                appsink.set_caps(Some(
+                    &gst::Caps::builder("video/x-raw")
+                        .features(&[&"memory:GLMemory"])
+                        .field("format", &gst_video::VideoFormat::Rgba.to_str())
+                        .build(),
+                ));
+            } else {
+                appsink.set_caps(Some(
+                    &gst::Caps::builder("video/x-raw")
+                        .field("format", &gst_video::VideoFormat::Rgba.to_str())
+                        .build(),
+                ));
             }
-
-            let sink = sink.downcast::<gst_app::AppSink>().unwrap();
-            sink.set_caps(Some(
-                &gst::Caps::builder("video/x-raw")
-                    .field("format", &gst_video::VideoFormat::Rgba.to_str())
-                    .build(),
-            ));
             // TODO: set calculated target resolution here
 
-            // Get the queue element's sink pad and link the decodebin's newly created
+            // Get the first elements element's sink pad and link the decodebin's newly created
             // src pad for the video stream to it.
-            let sink_pad = queue.get_static_pad("sink").expect("queue has no sinkpad");
+            let sink_pad = first_element
+                .get_static_pad("sink")
+                .expect("first element has no sinkpad");
             src_pad.link(&sink_pad).unwrap();
-            let video_memory = video_memory.clone();
-            sink.set_callbacks(gst_app::AppSinkCallbacks::builder().new_sample(move |appsink| {
-                let sample = appsink.pull_sample().map_err(|_| gst::FlowError::Eos)?;
-                video_memory.swap(Some(Arc::new(sample)));
-                Ok(gst::FlowSuccess::Ok)
-            }).build());
-        }
 
+            let video_memory = video_memory.clone();
+            appsink.set_callbacks(
+                gst_app::AppSinkCallbacks::builder()
+                    .new_sample(move |appsink| {
+                        let sample = appsink.pull_sample().map_err(|_| gst::FlowError::Eos)?;
+                        video_memory.swap(Some(Arc::new(sample)));
+                        Ok(gst::FlowSuccess::Ok)
+                    })
+                    .build(),
+            );
+        }
     });
 
     pipeline.set_state(gst::State::Playing).unwrap();
-    pipeline
-        .get_state(gst::CLOCK_TIME_NONE)
-        .0
-        .unwrap();
+    pipeline.get_state(gst::CLOCK_TIME_NONE).0.unwrap();
     pipeline
 }
 
-
 #[tonic::async_trait]
 impl MediaController for MyMediaController {
-
-    async fn add_slide(&self, _request: Request<SlideAddRequest>) ->
-    Result<Response<SlideAddResponse>, Status> {
+    async fn add_slide(
+        &self,
+        _request: Request<SlideAddRequest>,
+    ) -> Result<Response<SlideAddResponse>, Status> {
         let mut next_slide_id = self.scene.next_slide_id.lock().unwrap();
         *next_slide_id += 1;
-        let empty_slide = Arc::new(Mutex::new(crate::scene::Slide {
-            widgets: vec![]
-        }));
-        self.scene.slides.lock().unwrap().insert(*next_slide_id, empty_slide);
+        let empty_slide = Arc::new(Mutex::new(crate::scene::Slide { widgets: vec![] }));
+        self.scene
+            .slides
+            .lock()
+            .unwrap()
+            .insert(*next_slide_id, empty_slide);
 
-        Ok(Response::new(SlideAddResponse{
-            slide_id: *next_slide_id
-        }))     
+        Ok(Response::new(SlideAddResponse {
+            slide_id: *next_slide_id,
+        }))
     }
 
-    async fn show_slide(&self, request: tonic::Request<ShowSlideRequest>) -> 
-    Result<tonic::Response<ShowSlideResponse>, tonic::Status> {
+    async fn show_slide(
+        &self,
+        request: tonic::Request<ShowSlideRequest>,
+    ) -> Result<tonic::Response<ShowSlideResponse>, tonic::Status> {
         let req = request.into_inner();
         println!("Show slide {}", req.slide_id);
-       
+
         let mut current_slide = self.scene.current_slide.lock().unwrap();
         match self.scene.slides.lock().unwrap().get_mut(&req.slide_id) {
             Some(slide) => {
                 *current_slide = slide.clone();
 
-                Ok(Response::new(ShowSlideResponse{}))
+                Ok(Response::new(ShowSlideResponse {}))
             }
-            None => {
-                Err(Status::invalid_argument("Could not find slide"))
-            }
+            None => Err(Status::invalid_argument("Could not find slide")),
         }
     }
 
-    async fn add_widgets_to_slide(&self, request: tonic::Request<WidgetAddRequest>) ->
-    Result<tonic::Response<WidgetAddResponse>, tonic::Status> {
+    async fn add_widgets_to_slide(
+        &self,
+        request: tonic::Request<WidgetAddRequest>,
+    ) -> Result<tonic::Response<WidgetAddResponse>, tonic::Status> {
         let req = request.into_inner();
         println!("Slide {} Widget: {:?}", req.slide_id, req.widget);
 
-        let widget = req.widget.ok_or(Status::invalid_argument("Missing Widget Type"))?;        
-       
+        let widget = req
+            .widget
+            .ok_or(Status::invalid_argument("Missing Widget Type"))?;
+
         let new_widget = crate::scene::Widget {
             x: req.x as f32,
             y: req.y as f32,
@@ -236,127 +309,143 @@ impl MediaController for MyMediaController {
             render_state: crate::scene::RenderState::NoContent,
             update_state: crate::scene::UpdateState::NeedsUpdate,
             widget: match widget {
-                mpf::widget_add_request::Widget::LabelWidget(widget)  => {
-                    let color = widget.color.ok_or(Status::invalid_argument("Missing Color"))?;
+                mpf::widget_add_request::Widget::LabelWidget(widget) => {
+                    let color = widget
+                        .color
+                        .ok_or(Status::invalid_argument("Missing Color"))?;
                     crate::scene::WidgetType::Label {
                         text: widget.text,
                         color: mpf::convert_color(color),
                         font_size: widget.font_size as u32,
-                        font: None
+                        font: None,
                     }
-                },
+                }
                 mpf::widget_add_request::Widget::RectangleWidget(widget) => {
-                    let color = widget.color.ok_or(Status::invalid_argument("Missing Color"))?;
+                    let color = widget
+                        .color
+                        .ok_or(Status::invalid_argument("Missing Color"))?;
                     crate::scene::WidgetType::Rectacle {
                         height: widget.height,
                         width: widget.width,
                         color: mpf::convert_color(color),
                     }
-                },
+                }
                 mpf::widget_add_request::Widget::ImageWidget(widget) => {
                     let path = PathBuf::from(widget.path);
 
-                    let img = image::open(path).map_err(|e| Status::invalid_argument(e.to_string()))?;
+                    let img =
+                        image::open(path).map_err(|e| Status::invalid_argument(e.to_string()))?;
 
                     // TODO: calculate target size
                     // TODO: reize here using image::imageops::resize
 
                     let img = match img {
                         image::DynamicImage::ImageRgba8(img) => img,
-                        img => img.to_rgba()
+                        img => img.to_rgba(),
                     };
 
-                    crate::scene::WidgetType::Image {
-                        image: img
-                    }
-                },
+                    crate::scene::WidgetType::Image { image: img }
+                }
                 mpf::widget_add_request::Widget::ImageSpriteWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: graphics::WHITE,
                         font_size: 32,
-                        font: None
+                        font: None,
                     }
-                },
+                }
                 mpf::widget_add_request::Widget::AnimatedImageWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: graphics::WHITE,
                         font_size: 32,
-                        font: None
+                        font: None,
                     }
-                },
+                }
                 mpf::widget_add_request::Widget::VideoWidget(widget) => {
                     let video_memory = Arc::new(ArcSwapOption::from(None));
-                    let pipeline = create_video_pipeline(&widget.path, video_memory.clone());
+                    let pipeline = create_video_pipeline(
+                        &widget.path,
+                        video_memory.clone(),
+                        #[cfg(feature = "gst-gl-video")]
+                        self.gst_gl_context.clone(),
+                        #[cfg(feature = "gst-gl-video")]
+                        self.gl_display.clone(),
+                    );
 
                     let video_sink = pipeline
-                    .get_by_name("video_sink")
-                    .expect("Sink element not found")
-                    .downcast::<gst_app::AppSink>()
-                    .expect("Sink element is expected to be an appsink!");
+                        .get_by_name("app_sink")
+                        .expect("Sink element not found")
+                        .downcast::<gst_app::AppSink>()
+                        .expect("Sink element is expected to be an appsink!");
                     crate::scene::WidgetType::Video {
                         pipeline,
                         video_sink,
-                        video_memory
+                        video_memory,
                     }
-                },
+                }
                 mpf::widget_add_request::Widget::DisplayWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: graphics::WHITE,
                         font_size: 32,
-                        font: None
+                        font: None,
                     }
-                },             
+                }
                 mpf::widget_add_request::Widget::LineWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: graphics::WHITE,
                         font_size: 32,
-                        font: None
+                        font: None,
                     }
-                },             
+                }
                 mpf::widget_add_request::Widget::PolygonWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: graphics::WHITE,
                         font_size: 32,
-                        font: None
+                        font: None,
                     }
-                },
+                }
                 mpf::widget_add_request::Widget::BezierWidget(_widget) => {
                     crate::scene::WidgetType::Label {
                         text: "UNSUPPORTED".into(),
                         color: graphics::WHITE,
                         font_size: 32,
-                        font: None
+                        font: None,
                     }
-                },
-            }
+                }
+            },
         };
 
         match self.scene.slides.lock().unwrap().get_mut(&req.slide_id) {
             Some(slide) => {
                 slide.lock().unwrap().widgets.push(new_widget);
-                Ok(Response::new(WidgetAddResponse{}))
+                Ok(Response::new(WidgetAddResponse {}))
             }
-            None => {
-                Err(Status::invalid_argument("Could not find slide"))
-            }
+            None => Err(Status::invalid_argument("Could not find slide")),
         }
     }
 }
 
-pub async fn serve(scene: Arc<crate::scene::Scene>, gst_gl_context: gst_gl::GLContext) {
+pub async fn serve(
+    scene: Arc<crate::scene::Scene>,
+    #[cfg(feature = "gst-gl-video")] gst_gl_context: gst_gl::GLContext,
+    #[cfg(feature = "gst-gl-video")] gl_display: gst_gl::GLDisplay,
+) {
     let addr = "[::1]:50051".parse().unwrap();
-    let mc = MyMediaController{
+    let mc = MyMediaController {
         scene,
-        gst_gl_context
+        #[cfg(feature = "gst-gl-video")]
+        gst_gl_context,
+        #[cfg(feature = "gst-gl-video")]
+        gl_display,
     };
 
     Server::builder()
         .add_service(MediaControllerServer::new(mc))
         .serve(addr)
-        .await.unwrap();
+        .await
+        .unwrap();
 }

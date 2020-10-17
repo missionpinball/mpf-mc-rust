@@ -4,34 +4,27 @@ version = "0.1.0"
 authors = ["Jan Kantert <jan-mpf@kantert.net>"]
 edition = "2018"
 
+[features]
+default = []
+gst-gl-video = ["glutin", "gstreamer-gl"]
+
 [dependencies]
-ggez = { version = "0.5.1", features = ["bzip2", "gst-gl"], path = "../ggez" }
-
-glutin = "0.21"
-
-#piston = "0.52.0"
-#piston2d-graphics = "0.37.0"
-#piston_window = "0.113.0"
-#piston-texture = "0.8.0"
-#piston2d-gfx_graphics = "0.70.0"
-
-#gfx = "0.18.1"
-#gfx_device_gl = "0.16.2"
-#gfx_core = "0.9.2"
-#graphics_buffer = { version = "0.7.4", features = ["piston_window_texture"] }
-#find_folder = "0.3.0"
+# we currently use ggez devel which is not released yet
+ggez = { version = "0.5.1", features = ["bzip2"], path = "../ggez" }
 
 image = "0.23.9"
-
 arc-swap = "0.4.7"
-
 fps_counter = "1.0.0"
 
 gstreamer = "0.16.3"
 gstreamer-app = "0.16.3"
 gstreamer-video = "0.16.3"
-gstreamer-gl = { versopm = "0.16.3", features = ["wayland", "egl", "x11"] }
 
+# for optional gl video feature
+glutin = { version = "0.21", optional = true }
+gstreamer-gl = { version = "0.16.3", features = ["wayland", "egl", "x11"], optional = true  }
+
+# used by the gRPC server
 tonic = "0.3"
 prost = "0.6"
 tokio = { version = "0.2", features = ["macros"] }

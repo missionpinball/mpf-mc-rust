@@ -786,7 +786,6 @@ dependencies = [
  "gilrs",
  "glutin",
  "glyph_brush",
- "gstreamer-gl",
  "image",
  "log",
  "lyon",
