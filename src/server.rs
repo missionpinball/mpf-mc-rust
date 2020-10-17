@@ -324,7 +324,7 @@ impl MediaController for MyMediaController {
                     let color = widget
                         .color
                         .ok_or(Status::invalid_argument("Missing Color"))?;
-                    crate::scene::WidgetType::Rectacle {
+                    crate::scene::WidgetType::Rectangle {
                         height: widget.height,
                         width: widget.width,
                         color: mpf::convert_color(color),
@@ -392,12 +392,17 @@ impl MediaController for MyMediaController {
                         font: None,
                     }
                 }
-                mpf::widget_add_request::Widget::LineWidget(_widget) => {
-                    crate::scene::WidgetType::Label {
-                        text: "UNSUPPORTED".into(),
-                        color: graphics::WHITE,
-                        font_size: 32,
-                        font: None,
+                mpf::widget_add_request::Widget::LineWidget(widget) => {
+                    let color = widget
+                        .color
+                        .ok_or(Status::invalid_argument("Missing Color"))?;
+                    crate::scene::WidgetType::Line {
+                        x1: widget.x1,
+                        y1: widget.y1,
+                        x2: widget.x2,
+                        y2: widget.y2,
+                        color: mpf::convert_color(color),
+                        width: widget.width,
                     }
                 }
                 mpf::widget_add_request::Widget::PolygonWidget(_widget) => {

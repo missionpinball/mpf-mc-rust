@@ -20,40 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0cserver.proto\x12\x03mpf\"\x11\n\x0fSlideAddRequest\"$\n\x10SlideAddResponse\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"&\n\x12SlideRemoveRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"\x15\n\x13SlideRemoveResponse\"@\n\x05\x43olor\x12\x0b\n\x03red\x18\x01 \x01(\x02\x12\r\n\x05green\x18\x02 \x01(\x02\x12\x0c\n\x04\x62lue\x18\x03 \x01(\x02\x12\r\n\x05\x61lpha\x18\x04 \x01(\x02\"\x1f\n\rScaleRelative\x12\x0e\n\x06\x66\x61\x63tor\x18\x01 \x01(\x02\".\n\rScaleAbsolute\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\"9\n\x18ScaleAbsoluteKeepAspects\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\"\x10\n\x0eScaleUnchanged\"\\\n\x0bWidgetLabel\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x11\n\tfont_size\x18\x02 \x01(\x05\x12\x11\n\tfont_name\x18\x03 \x01(\t\x12\x19\n\x05\x63olor\x18\x04 \x01(\x0b\x32\n.mpf.Color\"K\n\x0fWidgetRectangle\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\x12\x19\n\x05\x63olor\x18\x03 \x01(\x0b\x32\n.mpf.Color\"\xde\x01\n\x0bWidgetImage\x12\x0c\n\x04path\x18\x01 \x01(\t\x12(\n\tunchanged\x18\n \x01(\x0b\x32\x13.mpf.ScaleUnchangedH\x00\x12&\n\x08relative\x18\x0b \x01(\x0b\x32\x12.mpf.ScaleRelativeH\x00\x12&\n\x08\x61\x62solute\x18\x0c \x01(\x0b\x32\x12.mpf.ScaleAbsoluteH\x00\x12>\n\x15\x61\x62solute_keep_aspects\x18\r \x01(\x0b\x32\x1d.mpf.ScaleAbsoluteKeepAspectsH\x00\x42\x07\n\x05scale\"\x99\x02\n\x11WidgetImageSprite\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\x12\r\n\x05width\x18\x04 \x01(\x01\x12\x0e\n\x06height\x18\x05 \x01(\x01\x12(\n\tunchanged\x18\n \x01(\x0b\x32\x13.mpf.ScaleUnchangedH\x00\x12&\n\x08relative\x18\x0b \x01(\x0b\x32\x12.mpf.ScaleRelativeH\x00\x12&\n\x08\x61\x62solute\x18\x0c \x01(\x0b\x32\x12.mpf.ScaleAbsoluteH\x00\x12>\n\x15\x61\x62solute_keep_aspects\x18\r \x01(\x0b\x32\x1d.mpf.ScaleAbsoluteKeepAspectsH\x00\x42\x07\n\x05scale\"\x97\x02\n\x13WidgetAnimatedImage\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0b\n\x03\x66ps\x18\x02 \x01(\x05\x12\r\n\x05loops\x18\x03 \x01(\x05\x12\x13\n\x0bstart_frame\x18\x04 \x01(\x03\x12(\n\tunchanged\x18\n \x01(\x0b\x32\x13.mpf.ScaleUnchangedH\x00\x12&\n\x08relative\x18\x0b \x01(\x0b\x32\x12.mpf.ScaleRelativeH\x00\x12&\n\x08\x61\x62solute\x18\x0c \x01(\x0b\x32\x12.mpf.ScaleAbsoluteH\x00\x12>\n\x15\x61\x62solute_keep_aspects\x18\r \x01(\x0b\x32\x1d.mpf.ScaleAbsoluteKeepAspectsH\x00\x42\x07\n\x05scale\"\xea\x01\n\x0bWidgetVideo\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0e\n\x06volume\x18\x04 \x01(\x02\x12\x13\n\x0bsound_track\x18\x05 \x01(\t\x12\r\n\x05loops\x18\x06 \x01(\x05\x12(\n\tunchanged\x18\n \x01(\x0b\x32\x13.mpf.ScaleUnchangedH\x00\x12&\n\x08relative\x18\x0b \x01(\x0b\x32\x12.mpf.ScaleRelativeH\x00\x12>\n\x15\x61\x62solute_keep_aspects\x18\x0c \x01(\x0b\x32\x1d.mpf.ScaleAbsoluteKeepAspectsH\x00\x42\x07\n\x05scale\"#\n\rWidgetDisplay\x12\x12\n\ndisplay_id\x18\x01 \x01(\r\"\x86\x01\n\nWidgetLine\x12\n\n\x02x1\x18\x01 \x01(\x01\x12\n\n\x02y1\x18\x02 \x01(\x01\x12\n\n\x02x2\x18\x03 \x01(\x01\x12\n\n\x02y2\x18\x04 \x01(\x01\x12\x19\n\x05\x63olor\x18\x05 \x01(\x0b\x32\n.mpf.Color\x12\x0e\n\x06radius\x18\x06 \x01(\x01\x12\x1d\n\x05shape\x18\x07 \x01(\x0e\x32\x0e.mpf.LineShape\"\x0f\n\rWidgetPolygon\"\x0e\n\x0cWidgetBezier\"\x84\x05\n\x10WidgetAddRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\x12\t\n\x01z\x18\x04 \x01(\r\x12\x10\n\x08rotation\x18\x05 \x01(\x01\x12\x1e\n\x08\x61nchor_x\x18\x06 \x01(\x0e\x32\x0c.mpf.AnchorX\x12\x1e\n\x08\x61nchor_y\x18\x07 \x01(\x0e\x32\x0c.mpf.AnchorY\x12\x0f\n\x07opacity\x18\x08 \x01(\x01\x12(\n\x0clabel_widget\x18\x14 \x01(\x0b\x32\x10.mpf.WidgetLabelH\x00\x12\x30\n\x10rectangle_widget\x18\x15 \x01(\x0b\x32\x14.mpf.WidgetRectangleH\x00\x12(\n\x0cimage_widget\x18\x16 \x01(\x0b\x32\x10.mpf.WidgetImageH\x00\x12\x35\n\x13image_sprite_widget\x18\x17 \x01(\x0b\x32\x16.mpf.WidgetImageSpriteH\x00\x12\x39\n\x15\x61nimated_image_widget\x18\x18 \x01(\x0b\x32\x18.mpf.WidgetAnimatedImageH\x00\x12(\n\x0cvideo_widget\x18\x19 \x01(\x0b\x32\x10.mpf.WidgetVideoH\x00\x12,\n\x0e\x64isplay_widget\x18\x1a \x01(\x0b\x32\x12.mpf.WidgetDisplayH\x00\x12&\n\x0bline_widget\x18\x1b \x01(\x0b\x32\x0f.mpf.WidgetLineH\x00\x12,\n\x0epolygon_widget\x18\x1c \x01(\x0b\x32\x12.mpf.WidgetPolygonH\x00\x12*\n\rbezier_widget\x18\x1d \x01(\x0b\x32\x11.mpf.WidgetBezierH\x00\x42\x08\n\x06widget\"\x13\n\x11WidgetAddResponse\"$\n\x10ShowSlideRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"\x13\n\x11ShowSlideResponse*-\n\tLineShape\x12\n\n\x06Square\x10\x00\x12\t\n\x05Round\x10\x01\x12\t\n\x05\x42\x65vel\x10\x02**\n\x07\x41nchorX\x12\x07\n\x03TOP\x10\x00\x12\n\n\x06MIDDLE\x10\x01\x12\n\n\x06\x42OTTOM\x10\x02**\n\x07\x41nchorY\x12\x08\n\x04LEFT\x10\x00\x12\n\n\x06\x43\x45NTER\x10\x01\x12\t\n\x05RIGHT\x10\x02\x32\xca\x01\n\x0fMediaController\x12\x37\n\x08\x41\x64\x64Slide\x12\x14.mpf.SlideAddRequest\x1a\x15.mpf.SlideAddResponse\x12\x42\n\x11\x41\x64\x64WidgetsToSlide\x12\x15.mpf.WidgetAddRequest\x1a\x16.mpf.WidgetAddResponse\x12:\n\tShowSlide\x12\x15.mpf.ShowSlideRequest\x1a\x16.mpf.ShowSlideResponseb\x06proto3'
+  serialized_pb=b'\n\x0cserver.proto\x12\x03mpf\"\x11\n\x0fSlideAddRequest\"$\n\x10SlideAddResponse\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"&\n\x12SlideRemoveRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"\x15\n\x13SlideRemoveResponse\"@\n\x05\x43olor\x12\x0b\n\x03red\x18\x01 \x01(\x02\x12\r\n\x05green\x18\x02 \x01(\x02\x12\x0c\n\x04\x62lue\x18\x03 \x01(\x02\x12\r\n\x05\x61lpha\x18\x04 \x01(\x02\"\x1f\n\rScaleRelative\x12\x0e\n\x06\x66\x61\x63tor\x18\x01 \x01(\x02\".\n\rScaleAbsolute\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\"9\n\x18ScaleAbsoluteKeepAspects\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\"\x10\n\x0eScaleUnchanged\"\\\n\x0bWidgetLabel\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x11\n\tfont_size\x18\x02 \x01(\x05\x12\x11\n\tfont_name\x18\x03 \x01(\t\x12\x19\n\x05\x63olor\x18\x04 \x01(\x0b\x32\n.mpf.Color\"K\n\x0fWidgetRectangle\x12\r\n\x05width\x18\x01 \x01(\x01\x12\x0e\n\x06height\x18\x02 \x01(\x01\x12\x19\n\x05\x63olor\x18\x03 \x01(\x0b\x32\n.mpf.Color\"\xde\x01\n\x0bWidgetImage\x12\x0c\n\x04path\x18\x01 \x01(\t\x12(\n\tunchanged\x18\n \x01(\x0b\x32\x13.mpf.ScaleUnchangedH\x00\x12&\n\x08relative\x18\x0b \x01(\x0b\x32\x12.mpf.ScaleRelativeH\x00\x12&\n\x08\x61\x62solute\x18\x0c \x01(\x0b\x32\x12.mpf.ScaleAbsoluteH\x00\x12>\n\x15\x61\x62solute_keep_aspects\x18\r \x01(\x0b\x32\x1d.mpf.ScaleAbsoluteKeepAspectsH\x00\x42\x07\n\x05scale\"\x99\x02\n\x11WidgetImageSprite\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\x12\r\n\x05width\x18\x04 \x01(\x01\x12\x0e\n\x06height\x18\x05 \x01(\x01\x12(\n\tunchanged\x18\n \x01(\x0b\x32\x13.mpf.ScaleUnchangedH\x00\x12&\n\x08relative\x18\x0b \x01(\x0b\x32\x12.mpf.ScaleRelativeH\x00\x12&\n\x08\x61\x62solute\x18\x0c \x01(\x0b\x32\x12.mpf.ScaleAbsoluteH\x00\x12>\n\x15\x61\x62solute_keep_aspects\x18\r \x01(\x0b\x32\x1d.mpf.ScaleAbsoluteKeepAspectsH\x00\x42\x07\n\x05scale\"\x97\x02\n\x13WidgetAnimatedImage\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0b\n\x03\x66ps\x18\x02 \x01(\x05\x12\r\n\x05loops\x18\x03 \x01(\x05\x12\x13\n\x0bstart_frame\x18\x04 \x01(\x03\x12(\n\tunchanged\x18\n \x01(\x0b\x32\x13.mpf.ScaleUnchangedH\x00\x12&\n\x08relative\x18\x0b \x01(\x0b\x32\x12.mpf.ScaleRelativeH\x00\x12&\n\x08\x61\x62solute\x18\x0c \x01(\x0b\x32\x12.mpf.ScaleAbsoluteH\x00\x12>\n\x15\x61\x62solute_keep_aspects\x18\r \x01(\x0b\x32\x1d.mpf.ScaleAbsoluteKeepAspectsH\x00\x42\x07\n\x05scale\"\xea\x01\n\x0bWidgetVideo\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0e\n\x06volume\x18\x04 \x01(\x02\x12\x13\n\x0bsound_track\x18\x05 \x01(\t\x12\r\n\x05loops\x18\x06 \x01(\x05\x12(\n\tunchanged\x18\n \x01(\x0b\x32\x13.mpf.ScaleUnchangedH\x00\x12&\n\x08relative\x18\x0b \x01(\x0b\x32\x12.mpf.ScaleRelativeH\x00\x12>\n\x15\x61\x62solute_keep_aspects\x18\x0c \x01(\x0b\x32\x1d.mpf.ScaleAbsoluteKeepAspectsH\x00\x42\x07\n\x05scale\"#\n\rWidgetDisplay\x12\x12\n\ndisplay_id\x18\x01 \x01(\r\"f\n\nWidgetLine\x12\n\n\x02x1\x18\x01 \x01(\x02\x12\n\n\x02y1\x18\x02 \x01(\x02\x12\n\n\x02x2\x18\x03 \x01(\x02\x12\n\n\x02y2\x18\x04 \x01(\x02\x12\x19\n\x05\x63olor\x18\x05 \x01(\x0b\x32\n.mpf.Color\x12\r\n\x05width\x18\x06 \x01(\x02\"\x0f\n\rWidgetPolygon\"\x0e\n\x0cWidgetBezier\"\x84\x05\n\x10WidgetAddRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\x12\t\n\x01x\x18\x02 \x01(\x01\x12\t\n\x01y\x18\x03 \x01(\x01\x12\t\n\x01z\x18\x04 \x01(\r\x12\x10\n\x08rotation\x18\x05 \x01(\x01\x12\x1e\n\x08\x61nchor_x\x18\x06 \x01(\x0e\x32\x0c.mpf.AnchorX\x12\x1e\n\x08\x61nchor_y\x18\x07 \x01(\x0e\x32\x0c.mpf.AnchorY\x12\x0f\n\x07opacity\x18\x08 \x01(\x01\x12(\n\x0clabel_widget\x18\x14 \x01(\x0b\x32\x10.mpf.WidgetLabelH\x00\x12\x30\n\x10rectangle_widget\x18\x15 \x01(\x0b\x32\x14.mpf.WidgetRectangleH\x00\x12(\n\x0cimage_widget\x18\x16 \x01(\x0b\x32\x10.mpf.WidgetImageH\x00\x12\x35\n\x13image_sprite_widget\x18\x17 \x01(\x0b\x32\x16.mpf.WidgetImageSpriteH\x00\x12\x39\n\x15\x61nimated_image_widget\x18\x18 \x01(\x0b\x32\x18.mpf.WidgetAnimatedImageH\x00\x12(\n\x0cvideo_widget\x18\x19 \x01(\x0b\x32\x10.mpf.WidgetVideoH\x00\x12,\n\x0e\x64isplay_widget\x18\x1a \x01(\x0b\x32\x12.mpf.WidgetDisplayH\x00\x12&\n\x0bline_widget\x18\x1b \x01(\x0b\x32\x0f.mpf.WidgetLineH\x00\x12,\n\x0epolygon_widget\x18\x1c \x01(\x0b\x32\x12.mpf.WidgetPolygonH\x00\x12*\n\rbezier_widget\x18\x1d \x01(\x0b\x32\x11.mpf.WidgetBezierH\x00\x42\x08\n\x06widget\"\x13\n\x11WidgetAddResponse\"$\n\x10ShowSlideRequest\x12\x10\n\x08slide_id\x18\x01 \x01(\r\"\x13\n\x11ShowSlideResponse**\n\x07\x41nchorX\x12\x07\n\x03TOP\x10\x00\x12\n\n\x06MIDDLE\x10\x01\x12\n\n\x06\x42OTTOM\x10\x02**\n\x07\x41nchorY\x12\x08\n\x04LEFT\x10\x00\x12\n\n\x06\x43\x45NTER\x10\x01\x12\t\n\x05RIGHT\x10\x02\x32\xca\x01\n\x0fMediaController\x12\x37\n\x08\x41\x64\x64Slide\x12\x14.mpf.SlideAddRequest\x1a\x15.mpf.SlideAddResponse\x12\x42\n\x11\x41\x64\x64WidgetsToSlide\x12\x15.mpf.WidgetAddRequest\x1a\x16.mpf.WidgetAddResponse\x12:\n\tShowSlide\x12\x15.mpf.ShowSlideRequest\x1a\x16.mpf.ShowSlideResponseb\x06proto3'
 )
 
-_LINESHAPE = _descriptor.EnumDescriptor(
-  name='LineShape',
-  full_name='mpf.LineShape',
-  filename=None,
-  file=DESCRIPTOR,
-  create_key=_descriptor._internal_create_key,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='Square', index=0, number=0,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='Round', index=1, number=1,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='Bevel', index=2, number=2,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=2498,
-  serialized_end=2543,
-)
-_sym_db.RegisterEnumDescriptor(_LINESHAPE)
-
-LineShape = enum_type_wrapper.EnumTypeWrapper(_LINESHAPE)
 _ANCHORX = _descriptor.EnumDescriptor(
   name='AnchorX',
   full_name='mpf.AnchorX',
@@ -79,8 +48,8 @@ _ANCHORX = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2545,
-  serialized_end=2587,
+  serialized_start=2465,
+  serialized_end=2507,
 )
 _sym_db.RegisterEnumDescriptor(_ANCHORX)
 
@@ -110,15 +79,12 @@ _ANCHORY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2589,
-  serialized_end=2631,
+  serialized_start=2509,
+  serialized_end=2551,
 )
 _sym_db.RegisterEnumDescriptor(_ANCHORY)
 
 AnchorY = enum_type_wrapper.EnumTypeWrapper(_ANCHORY)
-Square = 0
-Round = 1
-Bevel = 2
 TOP = 0
 MIDDLE = 1
 BOTTOM = 2
@@ -894,28 +860,28 @@ _WIDGETLINE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='x1', full_name='mpf.WidgetLine.x1', index=0,
-      number=1, type=1, cpp_type=5, label=1,
+      number=1, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='y1', full_name='mpf.WidgetLine.y1', index=1,
-      number=2, type=1, cpp_type=5, label=1,
+      number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='x2', full_name='mpf.WidgetLine.x2', index=2,
-      number=3, type=1, cpp_type=5, label=1,
+      number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='y2', full_name='mpf.WidgetLine.y2', index=3,
-      number=4, type=1, cpp_type=5, label=1,
+      number=4, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -928,16 +894,9 @@ _WIDGETLINE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='radius', full_name='mpf.WidgetLine.radius', index=5,
-      number=6, type=1, cpp_type=5, label=1,
+      name='width', full_name='mpf.WidgetLine.width', index=5,
+      number=6, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='shape', full_name='mpf.WidgetLine.shape', index=6,
-      number=7, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -953,8 +912,8 @@ _WIDGETLINE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1602,
-  serialized_end=1736,
+  serialized_start=1601,
+  serialized_end=1703,
 )
 
 
@@ -978,8 +937,8 @@ _WIDGETPOLYGON = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1738,
-  serialized_end=1753,
+  serialized_start=1705,
+  serialized_end=1720,
 )
 
 
@@ -1003,8 +962,8 @@ _WIDGETBEZIER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1755,
-  serialized_end=1769,
+  serialized_start=1722,
+  serialized_end=1736,
 )
 
 
@@ -1159,8 +1118,8 @@ _WIDGETADDREQUEST = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=1772,
-  serialized_end=2416,
+  serialized_start=1739,
+  serialized_end=2383,
 )
 
 
@@ -1184,8 +1143,8 @@ _WIDGETADDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2418,
-  serialized_end=2437,
+  serialized_start=2385,
+  serialized_end=2404,
 )
 
 
@@ -1216,8 +1175,8 @@ _SHOWSLIDEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2439,
-  serialized_end=2475,
+  serialized_start=2406,
+  serialized_end=2442,
 )
 
 
@@ -1241,8 +1200,8 @@ _SHOWSLIDERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2477,
-  serialized_end=2496,
+  serialized_start=2444,
+  serialized_end=2463,
 )
 
 _WIDGETLABEL.fields_by_name['color'].message_type = _COLOR
@@ -1308,7 +1267,6 @@ _WIDGETVIDEO.oneofs_by_name['scale'].fields.append(
   _WIDGETVIDEO.fields_by_name['absolute_keep_aspects'])
 _WIDGETVIDEO.fields_by_name['absolute_keep_aspects'].containing_oneof = _WIDGETVIDEO.oneofs_by_name['scale']
 _WIDGETLINE.fields_by_name['color'].message_type = _COLOR
-_WIDGETLINE.fields_by_name['shape'].enum_type = _LINESHAPE
 _WIDGETADDREQUEST.fields_by_name['anchor_x'].enum_type = _ANCHORX
 _WIDGETADDREQUEST.fields_by_name['anchor_y'].enum_type = _ANCHORY
 _WIDGETADDREQUEST.fields_by_name['label_widget'].message_type = _WIDGETLABEL
@@ -1374,7 +1332,6 @@ DESCRIPTOR.message_types_by_name['WidgetAddRequest'] = _WIDGETADDREQUEST
 DESCRIPTOR.message_types_by_name['WidgetAddResponse'] = _WIDGETADDRESPONSE
 DESCRIPTOR.message_types_by_name['ShowSlideRequest'] = _SHOWSLIDEREQUEST
 DESCRIPTOR.message_types_by_name['ShowSlideResponse'] = _SHOWSLIDERESPONSE
-DESCRIPTOR.enum_types_by_name['LineShape'] = _LINESHAPE
 DESCRIPTOR.enum_types_by_name['AnchorX'] = _ANCHORX
 DESCRIPTOR.enum_types_by_name['AnchorY'] = _ANCHORY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -1549,8 +1506,8 @@ _MEDIACONTROLLER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=2634,
-  serialized_end=2836,
+  serialized_start=2554,
+  serialized_end=2756,
   methods=[
   _descriptor.MethodDescriptor(
     name='AddSlide',

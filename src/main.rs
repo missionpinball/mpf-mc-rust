@@ -39,7 +39,7 @@ impl event::EventHandler for MainState {
         }
 
         let current_scene = self.scene.current_slide.lock().unwrap();
-        current_scene.lock().unwrap().update(ctx);
+        current_scene.lock().unwrap().update(ctx)?;
         Ok(())
     }
 
@@ -48,7 +48,7 @@ impl event::EventHandler for MainState {
         let origin = Point2::new(0.0, 0.0);
 
         let current_scene = self.scene.current_slide.lock().unwrap();
-        current_scene.lock().unwrap().draw(ctx, origin);
+        current_scene.lock().unwrap().draw(ctx, origin)?;
         graphics::present(ctx)?;
         Ok(())
     }

@@ -35,12 +35,6 @@ message Color {
     float alpha = 4;
 }
 
-enum LineShape {
-    Square = 0;
-    Round = 1;
-    Bevel = 2;
-}
-
 message ScaleRelative {
     float factor = 1;
 }
@@ -118,13 +112,12 @@ message WidgetDisplay {
     uint32 display_id = 1;      // The source display to show
 }
 message WidgetLine {
-    double x1 = 1;
-    double y1 = 2;
-    double x2 = 3;
-    double y2 = 4;
+    float x1 = 1;
+    float y1 = 2;
+    float x2 = 3;
+    float y2 = 4;
     Color color = 5;
-    double radius = 6;
-    LineShape shape = 7;
+    float width = 6;
 }
 message WidgetPolygon {
     // TODO
