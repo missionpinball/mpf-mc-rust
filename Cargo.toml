@@ -10,7 +10,7 @@ gst-gl-video = ["glutin", "gstreamer-gl"]
 
 [dependencies]
 # we currently use ggez devel which is not released yet
-ggez = { version = "0.5.1", features = ["bzip2"], path = "../ggez" }
+ggez = { version = "0.6.0-norelease", features = ["bzip2"], path = "../ggez" }
 
 image = "0.23.9"
 arc-swap = "0.4.7"

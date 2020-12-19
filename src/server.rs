@@ -252,20 +252,155 @@ fn create_video_pipeline(
     pipeline
 }
 
+fn create_widget (req: mpf::Widget, slide_id: &u32) -> Result<crate::scene::Widget, tonic::Status> {
+    let widget = req
+    .widget
+    .ok_or(Status::invalid_argument("Missing Widget Type"))?;
+    Ok(crate::scene::Widget {
+        x: req.x as f32,
+        y: req.y as f32,
+        z: req.z,
+        id: *slide_id,
+        render_state: crate::scene::RenderState::NoContent,
+        update_state: crate::scene::UpdateState::NeedsUpdate,
+        widget: match widget {
+            mpf::widget::Widget::LabelWidget(widget) => {
+                let color = widget
+                    .color
+                    .ok_or(Status::invalid_argument("Missing Color"))?;
+                crate::scene::WidgetType::Label {
+                    text: widget.text,
+                    color: mpf::convert_color(color),
+                    font_size: widget.font_size as u32,
+                    font: None,
+                }
+            }
+            mpf::widget::Widget::RectangleWidget(widget) => {
+                let color = widget
+                    .color
+                    .ok_or(Status::invalid_argument("Missing Color"))?;
+                crate::scene::WidgetType::Rectangle {
+                    height: widget.height,
+                    width: widget.width,
+                    color: mpf::convert_color(color),
+                }
+            }
+            mpf::widget::Widget::ImageWidget(widget) => {
+                let path = PathBuf::from(widget.path);
+
+                let img =
+                    image::open(path).map_err(|e| Status::invalid_argument(e.to_string()))?;
+
+                // TODO: calculate target size
+                // TODO: reize here using image::imageops::resize
+
+                let img = match img {
+                    image::DynamicImage::ImageRgba8(img) => img,
+                    img => img.to_rgba(),
+                };
+
+                crate::scene::WidgetType::Image { image: img }
+            }
+            mpf::widget::Widget::ImageSpriteWidget(_widget) => {
+                crate::scene::WidgetType::Label {
+                    text: "UNSUPPORTED".into(),
+                    color: graphics::WHITE,
+                    font_size: 32,
+                    font: None,
+                }
+            }
+            mpf::widget::Widget::AnimatedImageWidget(_widget) => {
+                crate::scene::WidgetType::Label {
+                    text: "UNSUPPORTED".into(),
+                    color: graphics::WHITE,
+                    font_size: 32,
+                    font: None,
+                }
+            }
+            mpf::widget::Widget::VideoWidget(widget) => {
+                let video_memory = Arc::new(ArcSwapOption::from(None));
+                let pipeline = create_video_pipeline(
+                    &widget.path,
+                    video_memory.clone(),
+                    #[cfg(feature = "gst-gl-video")]
+                    self.gst_gl_context.clone(),
+                    #[cfg(feature = "gst-gl-video")]
+                    self.gl_display.clone(),
+                );
+
+                let video_sink = pipeline
+                    .get_by_name("app_sink")
+                    .expect("Sink element not found")
+                    .downcast::<gst_app::AppSink>()
+                    .expect("Sink element is expected to be an appsink!");
+                crate::scene::WidgetType::Video {
+                    pipeline,
+                    video_sink,
+                    video_memory,
+                }
+            }
+            mpf::widget::Widget::DisplayWidget(_widget) => {
+                crate::scene::WidgetType::Label {
+                    text: "UNSUPPORTED".into(),
+                    color: graphics::WHITE,
+                    font_size: 32,
+                    font: None,
+                }
+            }
+            mpf::widget::Widget::LineWidget(widget) => {
+                let color = widget
+                    .color
+                    .ok_or(Status::invalid_argument("Missing Color"))?;
+                crate::scene::WidgetType::Line {
+                    x1: widget.x1,
+                    y1: widget.y1,
+                    x2: widget.x2,
+                    y2: widget.y2,
+                    color: mpf::convert_color(color),
+                    width: widget.width,
+                }
+            }
+            mpf::widget::Widget::PolygonWidget(_widget) => {
+                crate::scene::WidgetType::Label {
+                    text: "UNSUPPORTED".into(),
+                    color: graphics::WHITE,
+                    font_size: 32,
+                    font: None,
+                }
+            }
+            mpf::widget::Widget::BezierWidget(_widget) => {
+                crate::scene::WidgetType::Label {
+                    text: "UNSUPPORTED".into(),
+                    color: graphics::WHITE,
+                    font_size: 32,
+                    font: None,
+                }
+            }
+        },
+    })
+}
+
 #[tonic::async_trait]
 impl MediaController for MyMediaController {
     async fn add_slide(
         &self,
-        _request: Request<SlideAddRequest>,
+        request: Request<SlideAddRequest>,
     ) -> Result<Response<SlideAddResponse>, Status> {
         let mut next_slide_id = self.scene.next_slide_id.lock().unwrap();
+        let req = request.into_inner();
         *next_slide_id += 1;
-        let empty_slide = Arc::new(Mutex::new(crate::scene::Slide { widgets: vec![] }));
+
+        let mut new_widgets = vec![];
+        for widget in req.widgets {
+            new_widgets.push(create_widget(widget, &next_slide_id)?);
+        }
+
+        let new_slide = Arc::new(Mutex::new(crate::scene::Slide { widgets: new_widgets }));
         self.scene
             .slides
             .lock()
             .unwrap()
-            .insert(*next_slide_id, empty_slide);
+            .insert(*next_slide_id, new_slide);
 
         Ok(Response::new(SlideAddResponse {
             slide_id: *next_slide_id,
@@ -290,143 +425,35 @@ impl MediaController for MyMediaController {
         }
     }
 
+    async fn remove_slide(
+        &self,
+        request: tonic::Request<SlideRemoveRequest>,
+    ) -> Result<tonic::Response<SlideRemoveResponse>, tonic::Status> {
+        let req = request.into_inner();
+        match self.scene.slides.lock().unwrap().remove(&req.slide_id) {
+            Some(_) => {Ok(Response::new(SlideRemoveResponse {}))},
+            None => Err(Status::invalid_argument("Could not find slide")),
+        }
+    }
+
     async fn add_widgets_to_slide(
         &self,
         request: tonic::Request<WidgetAddRequest>,
     ) -> Result<tonic::Response<WidgetAddResponse>, tonic::Status> {
         let req = request.into_inner();
-        println!("Slide {} Widget: {:?}", req.slide_id, req.widget);
+        println!("Slide {} Widget: {:?}", req.slide_id, req.widgets);
 
-        let widget = req
-            .widget
-            .ok_or(Status::invalid_argument("Missing Widget Type"))?;
-
-        let new_widget = crate::scene::Widget {
-            x: req.x as f32,
-            y: req.y as f32,
-            z: req.z,
-            id: req.slide_id,
-            render_state: crate::scene::RenderState::NoContent,
-            update_state: crate::scene::UpdateState::NeedsUpdate,
-            widget: match widget {
-                mpf::widget_add_request::Widget::LabelWidget(widget) => {
-                    let color = widget
-                        .color
-                        .ok_or(Status::invalid_argument("Missing Color"))?;
-                    crate::scene::WidgetType::Label {
-                        text: widget.text,
-                        color: mpf::convert_color(color),
-                        font_size: widget.font_size as u32,
-                        font: None,
-                    }
-                }
-                mpf::widget_add_request::Widget::RectangleWidget(widget) => {
-                    let color = widget
-                        .color
-                        .ok_or(Status::invalid_argument("Missing Color"))?;
-                    crate::scene::WidgetType::Rectangle {
-                        height: widget.height,
-                        width: widget.width,
-                        color: mpf::convert_color(color),
-                    }
-                }
-                mpf::widget_add_request::Widget::ImageWidget(widget) => {
-                    let path = PathBuf::from(widget.path);
-
-                    let img =
-                        image::open(path).map_err(|e| Status::invalid_argument(e.to_string()))?;
-
-                    // TODO: calculate target size
-                    // TODO: reize here using image::imageops::resize
-
-                    let img = match img {
-                        image::DynamicImage::ImageRgba8(img) => img,
-                        img => img.to_rgba(),
-                    };
-
-                    crate::scene::WidgetType::Image { image: img }
-                }
-                mpf::widget_add_request::Widget::ImageSpriteWidget(_widget) => {
-                    crate::scene::WidgetType::Label {
-                        text: "UNSUPPORTED".into(),
-                        color: graphics::WHITE,
-                        font_size: 32,
-                        font: None,
-                    }
-                }
-                mpf::widget_add_request::Widget::AnimatedImageWidget(_widget) => {
-                    crate::scene::WidgetType::Label {
-                        text: "UNSUPPORTED".into(),
-                        color: graphics::WHITE,
-                        font_size: 32,
-                        font: None,
-                    }
-                }
-                mpf::widget_add_request::Widget::VideoWidget(widget) => {
-                    let video_memory = Arc::new(ArcSwapOption::from(None));
-                    let pipeline = create_video_pipeline(
-                        &widget.path,
-                        video_memory.clone(),
-                        #[cfg(feature = "gst-gl-video")]
-                        self.gst_gl_context.clone(),
-                        #[cfg(feature = "gst-gl-video")]
-                        self.gl_display.clone(),
-                    );
-
-                    let video_sink = pipeline
-                        .get_by_name("app_sink")
-                        .expect("Sink element not found")
-                        .downcast::<gst_app::AppSink>()
-                        .expect("Sink element is expected to be an appsink!");
-                    crate::scene::WidgetType::Video {
-                        pipeline,
-                        video_sink,
-                        video_memory,
-                    }
-                }
-                mpf::widget_add_request::Widget::DisplayWidget(_widget) => {
-                    crate::scene::WidgetType::Label {
-                        text: "UNSUPPORTED".into(),
-                        color: graphics::WHITE,
-                        font_size: 32,
-                        font: None,
-                    }
-                }
-                mpf::widget_add_request::Widget::LineWidget(widget) => {
-                    let color = widget
-                        .color
-                        .ok_or(Status::invalid_argument("Missing Color"))?;
-                    crate::scene::WidgetType::Line {
-                        x1: widget.x1,
-                        y1: widget.y1,
-                        x2: widget.x2,
-                        y2: widget.y2,
-                        color: mpf::convert_color(color),
-                        width: widget.width,
-                    }
-                }
-                mpf::widget_add_request::Widget::PolygonWidget(_widget) => {
-                    crate::scene::WidgetType::Label {
-                        text: "UNSUPPORTED".into(),
-                        color: graphics::WHITE,
-                        font_size: 32,
-                        font: None,
-                    }
-                }
-                mpf::widget_add_request::Widget::BezierWidget(_widget) => {
-                    crate::scene::WidgetType::Label {
-                        text: "UNSUPPORTED".into(),
-                        color: graphics::WHITE,
-                        font_size: 32,
-                        font: None,
-                    }
-                }
-            },
-        };
+        // Collect widgets to minimize lock contention and verify before changing state
+        let mut new_widgets = vec![];
+        for widget in req.widgets {
+            new_widgets.push(create_widget(widget, &req.slide_id)?);
+        }
 
         match self.scene.slides.lock().unwrap().get_mut(&req.slide_id) {
             Some(slide) => {
-                slide.lock().unwrap().widgets.push(new_widget);
+                for new_widget in new_widgets {
+                    slide.lock().unwrap().widgets.push(new_widget);
+                }
                 Ok(Response::new(WidgetAddResponse {}))
             }
             None => Err(Status::invalid_argument("Could not find slide")),

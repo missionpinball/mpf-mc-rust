@@ -7,7 +7,7 @@ use ggez::{Context, GameResult};
 use std::env;
 use std::path;
 
-use ggez::nalgebra::Point2;
+use ggez::mint::Point2;
 
 mod scene;
 mod server;
@@ -45,7 +45,7 @@ impl event::EventHandler for MainState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, [0.0, 0.0, 0.0, 1.0].into());
-        let origin = Point2::new(0.0, 0.0);
+        let origin = Point2{x: 0.0, y: 0.0};
 
         let current_scene = self.scene.current_slide.lock().unwrap();
         current_scene.lock().unwrap().draw(ctx, origin)?;
@@ -70,7 +70,7 @@ fn main() -> GameResult {
     let cb =
         ggez::ContextBuilder::new("MPF Media Controller", "jab").add_resource_path(resource_dir);
     let cb = cb.window_setup(ggez::conf::WindowSetup::default().title("MPF Media Controller"));
-    let (ctx, events_loop) = &mut cb.build()?;
+    let (mut ctx, events_loop) = cb.build()?;
 
     #[cfg(feature = "gst-gl-video")]
     let (gst_gl_context, gl_display) = gst_gl_video::create_gst_gl_context(ctx);
@@ -87,6 +87,6 @@ fn main() -> GameResult {
         ));
     });
 
-    let state = &mut MainState::new(ctx, scene)?;
+    let state = MainState::new(&mut ctx, scene)?;
     event::run(ctx, events_loop, state)
 }

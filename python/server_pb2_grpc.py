@@ -19,6 +19,11 @@ class MediaControllerStub(object):
                 request_serializer=server__pb2.SlideAddRequest.SerializeToString,
                 response_deserializer=server__pb2.SlideAddResponse.FromString,
                 )
+        self.RemoveSlide = channel.unary_unary(
+                '/mpf.MediaController/RemoveSlide',
+                request_serializer=server__pb2.SlideRemoveRequest.SerializeToString,
+                response_deserializer=server__pb2.SlideRemoveResponse.FromString,
+                )
         self.AddWidgetsToSlide = channel.unary_unary(
                 '/mpf.MediaController/AddWidgetsToSlide',
                 request_serializer=server__pb2.WidgetAddRequest.SerializeToString,
@@ -41,9 +46,14 @@ class MediaControllerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def RemoveSlide(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def AddWidgetsToSlide(self, request, context):
-        """rpc RemoveSlide() returns ();
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -64,6 +74,11 @@ def add_MediaControllerServicer_to_server(servicer, server):
                     servicer.AddSlide,
                     request_deserializer=server__pb2.SlideAddRequest.FromString,
                     response_serializer=server__pb2.SlideAddResponse.SerializeToString,
+            ),
+            'RemoveSlide': grpc.unary_unary_rpc_method_handler(
+                    servicer.RemoveSlide,
+                    request_deserializer=server__pb2.SlideRemoveRequest.FromString,
+                    response_serializer=server__pb2.SlideRemoveResponse.SerializeToString,
             ),
             'AddWidgetsToSlide': grpc.unary_unary_rpc_method_handler(
                     servicer.AddWidgetsToSlide,
@@ -99,6 +114,23 @@ class MediaController(object):
         return grpc.experimental.unary_unary(request, target, '/mpf.MediaController/AddSlide',
             server__pb2.SlideAddRequest.SerializeToString,
             server__pb2.SlideAddResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RemoveSlide(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/mpf.MediaController/RemoveSlide',
+            server__pb2.SlideRemoveRequest.SerializeToString,
+            server__pb2.SlideRemoveResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

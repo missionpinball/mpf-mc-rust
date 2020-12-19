@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 use ggez::graphics::{self, Drawable};
-use ggez::nalgebra::Point2;
+use ggez::mint::Point2;
 use ggez::{graphics::DrawParam, Context};
 
 use arc_swap::ArcSwapOption;
@@ -147,7 +147,7 @@ where
 impl Widget {
     fn draw(&mut self, ctx: &mut Context, _origin: Point2<f32>) -> ggez::GameResult {
         // TODO: implement transform here to origin here
-        let draw_param = DrawParam::default().dest(Point2::new(self.x, self.y));
+        let draw_param = DrawParam::default().dest(Point2{x: self.x, y: self.y});
         match &self.render_state {
             RenderState::ImageTextureRendered { image_texture } => {
                 graphics::draw(ctx, image_texture, draw_param)?;
@@ -250,7 +250,7 @@ impl Widget {
             } => {
                 let mb = &mut graphics::MeshBuilder::new();
                 mb.line(
-                    &[Point2::new(*x1, *y1), Point2::new(*x2, *y2)],
+                    &[Point2{x: *x1, y: *y1}, Point2{x: *x2, y: *y2}],
                     *width,
                     *color,
                 )?;

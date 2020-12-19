@@ -4,7 +4,7 @@ package mpf;
 service MediaController {
     //rpc ConfigureDisplays() returns ();
     rpc AddSlide(SlideAddRequest) returns (SlideAddResponse);
-    //rpc RemoveSlide() returns ();
+    rpc RemoveSlide(SlideRemoveRequest) returns (SlideRemoveResponse);
     rpc AddWidgetsToSlide(WidgetAddRequest) returns (WidgetAddResponse);
     //rpc RemoveWidgetFromSlide() returns ();
     rpc ShowSlide(ShowSlideRequest) returns (ShowSlideResponse);
@@ -14,6 +14,7 @@ service MediaController {
 
 // Request a new slide in the media controller
 message SlideAddRequest {
+    repeated Widget widgets = 1;
 }
 
 // Will return the slide id for future reference
@@ -137,8 +138,7 @@ enum AnchorY {
     RIGHT = 2;
 }
 
-message WidgetAddRequest {
-    uint32 slide_id = 1;
+message Widget {
     double x = 2;
     double y = 3;
     uint32 z = 4;
@@ -150,14 +150,19 @@ message WidgetAddRequest {
         WidgetLabel label_widget = 20;
         WidgetRectangle rectangle_widget = 21;
         WidgetImage image_widget = 22;
-        WidgetImageSprite image_sprite_widget = 23;
-        WidgetAnimatedImage animated_image_widget = 24;
+        WidgetImageSprite image_sprite_widget = 23;         // not implemented yet
+        WidgetAnimatedImage animated_image_widget = 24;     // not implemented yet
         WidgetVideo video_widget = 25;
-        WidgetDisplay display_widget = 26;
+        WidgetDisplay display_widget = 26;                  // not implemented yet
         WidgetLine line_widget = 27;
-        WidgetPolygon polygon_widget = 28;
-        WidgetBezier bezier_widget = 29;
+        WidgetPolygon polygon_widget = 28;                  // not implemented yet
+        WidgetBezier bezier_widget = 29;                    // not implemented yet
     }
+}
+
+message WidgetAddRequest {
+    uint32 slide_id = 1;
+    repeated Widget widgets = 2;
 }
 
 message WidgetAddResponse {
