@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from . import server_pb2 as server__pb2
+from mpfdmc import server_pb2 as server__pb2
 
 
 class MediaControllerStub(object):
